@@ -25,13 +25,13 @@ Requirement:
 --]]
 local recipe_nb = AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE)
 recipe_nb.atlas = "images/inventoryimages/book_notebook.xml"
---[[
+
 AddPlayerPostInit(function(inst)
     if GLOBAL.TheWorld.ismastersim then
-        inst:AddComponent("notebook_handler")
+        inst:AddComponent("nbreader")
     end
 end)
-
+--[[
 AddAction("READ_NOTEBOOK", "Read", function(act)
     local targ = act.target or act.invobject
     if targ ~= nil and

@@ -48,9 +48,8 @@ function Notebook:OnLoad(data)
 end
 
 function Notebook:OnRead(doer)
-    if doer.HUD ~= nil then
-        
-    end
+    self:BeginWriting(doer)
+    return true
 end
 
 function Notebook:BeginWriting(doer)
