@@ -9,10 +9,6 @@ local prefabs =
     "book_fx",
 }
 
-local function onread(inst, reader)
-    reader.components.talker:Say("Cthulhu Fhatgn!", 2)
-end
-
 local function onburnt(inst)
     inst:RemoveComponent("notebook")
     SpawnPrefab("ash").Transform:SetPosition(inst.Transform:GetWorldPosition())

@@ -140,17 +140,31 @@ local notebook_config =
     animbuild = "ui_board_5x3",
     menuoffset = Vector3(6, -70, 0),
 
-    cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
+    cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
+        if inst.components.notebook ~= nil then
+            inst.components.notebook:EndWriting()
+        end
+    end, control = CONTROL_CANCEL },
     middlebtn = { text = "Clear", cb = function(inst, doer, widget)
-            print("KK-TEST:inst="..tostring(inst))
-            widget:OverrideText("")
+        widget:OverrideText("")
+        if inst.components.notebook ~= nil then
+            inst.components.notebook:Clear()
+        end
     end, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_ACCEPT },
+    acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
+        if inst.components.notebook ~= nil then
+            inst.components.notebook.title = widget:GetText()
+            inst.components.notebook:EndWriting()
+        end
+    end, control = CONTROL_ACCEPT },
 }
 NotebookMod.makescreen = function(inst, doer)
     if inst.prefab == "book_notebook" then
+        print("KK-TEST:Function 'NotebookMod.makescreen' invoked.")
         if doer and doer.HUD then
-            return doer.HUD:ShowWriteableWidget(inst, notebook_config)
+            local screen = doer.HUD:ShowWriteableWidget(inst, notebook_config)
+            screen:OverrideText(inst.components.notebook.title)
+            return screen
         end
     end
 end

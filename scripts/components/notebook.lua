@@ -5,9 +5,12 @@ local function gettext(inst, reader)
     local that = inst.components.notebook
     
     if that and that.title then
-        local text = "\"" .. that.title or "Untitled" .. "\""
-        if that.writer then
-            text = text .. " by " .. that.writer
+        local text = "\"" .. that.title .. "\""
+        if that.writers then
+            text = text .. " by " .. that.writers[1]
+            if #that.writers / 2 > 1 then
+                text = text .. ", etc"
+            end
         end
         
         return text
@@ -78,6 +81,10 @@ function Notebook:Write(doer, title, text)
     end
 end
 
+local function GetPlayerName(player)
+    return player.Network:GetClientName() --, player.Network:GetUserID()
+end
+
 function Notebook:EndWriting()
     if self.writer ~= nil then
         self.inst:StopUpdatingComponent(self)
@@ -93,7 +100,14 @@ function Notebook:EndWriting()
         if self.writers == nil then
             self.writers = {}
         end
-        table.insert(self.writers, self.writer)
+        local player_name = GetPlayerName(self.writer)
+        if self.writers[player_name] == nil then
+            -- set
+            self.writers[player_name] = true
+            -- list
+            table.insert(self.writers, player_name)
+        end
+        
         self.writer = nil
     elseif self.screen ~= nil then
         if self.screen.inst:IsValid() then
@@ -103,14 +117,18 @@ function Notebook:EndWriting()
     end
 end
 
+function Notebook:Clear()
+    self.title = nil
+    self.writers = nil
+    self.text = nil
+end
+
 -- Invoked when this component is removed from entity
 function Notebook:OnRemoveFromEntity()
     self:EndWriting()
     self.inst:RemoveTag("notebook")
     
-    self.title = nil
-    self.writers = nil
-    self.text = nil
+    self:Clear()
     
     if self.inst.components.inspectable ~= nil
             and self.inst.components.inspectable.getspecialdescription == gettext 
