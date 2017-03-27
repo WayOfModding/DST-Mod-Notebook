@@ -59,3 +59,5 @@ local state_read_notebook = GLOBAL.State{
     
 }
 --]]
+
+-- TODO: "book_notebook" misses image on ground

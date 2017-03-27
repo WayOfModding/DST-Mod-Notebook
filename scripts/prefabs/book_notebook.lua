@@ -1,11 +1,23 @@
-local assets=
+local assets =
 {
     Asset("IMAGE", "images/inventoryimages/book_notebook.tex"),
     Asset("ATLAS", "images/inventoryimages/book_notebook.xml"),
 }
 
+local prefabs =
+{
+    "book_fx",
+}
+
 local function onread(inst, reader)
     reader.components.talker:Say("Cthulhu Fhatgn!", 2)
+end
+
+local function onburnt(inst)
+    print("KK-TEST: Function 'onburnt' invoked.")
+    inst:RemoveComponent("notebook")
+    SpawnPrefab("ash").Transform:SetPosition(inst.Transform:GetWorldPosition())
+    inst:Remove()
 end
 
 local function fn(Sim)
@@ -34,19 +46,19 @@ local function fn(Sim)
     -- Writeable book --
     --inst:AddComponent("writeable")
     --inst:AddComponent("book")
-    --inst.components.book.onread = onread
-    --inst:AddComponent("notebook_context")
+    inst:AddComponent("notebook")
     --------------------
     
-    -- Books are flammable 
+    -- Books are flammable
     inst:AddComponent("fuel")
     inst.components.fuel.fuelvalue = TUNING.MED_FUEL
     MakeSmallBurnable(inst, TUNING.MED_BURNTIME)
     MakeSmallPropagator(inst)
+    inst.components.burnable:SetOnBurntFn(onburnt)
 
     MakeHauntableLaunch(inst)
 
     return inst
 end
 
-return Prefab( "common/inventory/book_notebook", fn, assets) 
+return Prefab( "common/inventory/book_notebook", fn, assets, prefabs) 
