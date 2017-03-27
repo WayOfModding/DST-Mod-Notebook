@@ -1,6 +1,5 @@
 local assets =
 {
-    Asset("IMAGE", "images/book_notebook.tex"),
     Asset("ATLAS", "images/book_notebook.xml"),
 }
 

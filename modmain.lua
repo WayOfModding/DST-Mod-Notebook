@@ -13,8 +13,11 @@ local ActionHandler = GLOBAL.ActionHandler
 local SpawnPrefab = GLOBAL.SpawnPrefab
 local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
 
-local NotebookMod = {}
-GLOBAL.NotebookMod = NotebookMod
+local NotebookMod =
+{
+    DEBUG = true,
+}
+
 
 PrefabFiles =
 {
@@ -164,4 +167,24 @@ NotebookMod.makescreen = function(inst, doer)
             return screen
         end
     end
+end
+
+GLOBAL.NotebookMod = NotebookMod
+
+-- DEBUG
+if NotebookMod and NotebookMod.DEBUG then
+    local function IsNotebook(item)
+        return item.prefab == "book_notebook"
+    end
+    
+    local function DebugSimInit(inst)
+        if inst and inst.components.inventory then
+            if inst.components.inventory:FindItem(IsNotebook) then
+                return
+            end
+            inst.components.inventory:GiveItem(SpawnPrefab("book_notebook"))
+        end
+    end
+
+    AddSimPostInit(DebugSimInit)
 end
