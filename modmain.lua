@@ -1,12 +1,22 @@
 local require = GLOBAL.require
 local STRINGS = GLOBAL.STRINGS
-
 local Ingredient = GLOBAL.Ingredient
 local RECIPETABS = GLOBAL.RECIPETABS
 local STRINGS = GLOBAL.STRINGS
 local TECH = GLOBAL.TECH
+local ACTIONS = GLOBAL.ACTIONS
+local State = GLOBAL.State
+local FRAMES = GLOBAL.FRAMES
+local TimeEvent = GLOBAL.TimeEvent
+local EventHandler = GLOBAL.EventHandler
+local ActionHandler = GLOBAL.ActionHandler
+local SpawnPrefab = GLOBAL.SpawnPrefab
+local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
 
-PrefabFiles = 
+local NotebookMod = {}
+GLOBAL.NotebookMod = NotebookMod
+
+PrefabFiles =
 {
 "book_notebook",
 }
@@ -26,38 +36,121 @@ Requirement:
 local recipe_nb = AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE)
 recipe_nb.atlas = "images/inventoryimages/book_notebook.xml"
 
+AddPrefabPostInit("book_notebook", function(inst)
+    if GLOBAL.TheWorld.ismastersim then
+        inst:AddComponent("nbreader")
+    end
+end)
 AddPlayerPostInit(function(inst)
     if GLOBAL.TheWorld.ismastersim then
         inst:AddComponent("nbreader")
     end
 end)
---[[
-AddAction("READ_NOTEBOOK", "Read", function(act)
+
+local action_nbread = AddAction("NBREAD", "Read", function(act)
     local targ = act.target or act.invobject
-    if targ ~= nil and
-            act.doer ~= nil and
-            targ.components.notebook_context ~= nil and
-            act.doer.components.notebook_handler ~= nil then
-        act.doer.components.notebook_handler:Read(targ)
-        return true
-    else
-        return false
+    if targ ~= nil
+            and act.doer ~= nil
+            and targ.components.notebook ~= nil
+            and act.doer.components.nbreader ~= nil
+    then
+        return act.doer.components.nbreader:Read(targ)
+    end
+end)
+action_nbread.mount_valid = true
+
+AddComponentAction("INVENTORY", "nbreader", function(inst, doer, actions)
+    if inst:HasTag("nbreader") then
+        table.insert(actions, ACTIONS.NBREAD)
     end
 end)
 
-AddComponentAction("SCENE", "notebook_handler", function(inst, doer, actions, right)
-    if right then
-        if inst:HasTag("notebook") then
-            table.insert(actions, GLOBAL.ACTIONS.READ_NOTEBOOK)
+local state_notebook = State{
+    name = "notebook",
+    tags = { "doing" },
+    -- get code from State{"book"} from SGwilson.lua
+    onenter = function(inst)
+        inst.components.locomotor:Stop()
+        inst.AnimState:PlayAnimation("action_uniqueitem_pre")
+        inst.AnimState:PushAnimation("book", false)
+        inst.AnimState:Show("ARM_normal")
+        inst.components.inventory:ReturnActiveActionItem(inst.bufferedaction ~= nil and (inst.bufferedaction.target or inst.bufferedaction.invobject) or nil)
+    end,
+
+    timeline =
+    {
+        TimeEvent(0, function(inst)
+            local fxtoplay = inst.components.rider ~= nil and inst.components.rider:IsRiding() and "book_fx_mount" or "book_fx"
+            local fx = SpawnPrefab(fxtoplay)
+            fx.entity:SetParent(inst.entity)
+            fx.Transform:SetPosition(0, 0.2, 0)
+            inst.sg.statemem.book_fx = fx
+        end),
+
+        TimeEvent(28 * FRAMES, function(inst)
+            inst.SoundEmitter:PlaySound("dontstarve/common/use_book_light")
+        end),
+
+        TimeEvent(54 * FRAMES, function(inst)
+            inst.SoundEmitter:PlaySound("dontstarve/common/use_book_close")
+        end),
+
+        TimeEvent(58 * FRAMES, function(inst)
+            inst.SoundEmitter:PlaySound("dontstarve/common/book_spell")
+            inst:PerformBufferedAction()
+            inst.sg.statemem.book_fx = nil
+        end),
+    },
+
+    events =
+    {
+        EventHandler("animqueueover", function(inst)
+            if inst.AnimState:AnimDone() then
+                inst.sg:GoToState("idle")
+            end
+        end),
+    },
+
+    onexit = function(inst)
+        if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS) then
+            inst.AnimState:Show("ARM_carry")
+            inst.AnimState:Hide("ARM_normal")
         end
-    end
-end)
-
-local state_read_notebook = GLOBAL.State{
-    name = "readn",
-    tags = { "doing", "busy" },
-    
+        if inst.sg.statemem.book_fx then
+            inst.sg.statemem.book_fx:Remove()
+            inst.sg.statemem.book_fx = nil
+        end
+    end,
 }
---]]
+AddStategraphState("wilson", state_notebook)
+AddStategraphState("wilson_client", state_notebook)
+
+AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
+AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 
 -- TODO: "book_notebook" misses image on ground
+local Vector3 = GLOBAL.Vector3
+local CONTROL_CANCEL = GLOBAL.CONTROL_CANCEL
+local CONTROL_MENU_MISC_2 = GLOBAL.CONTROL_MENU_MISC_2
+local CONTROL_ACCEPT = GLOBAL.CONTROL_ACCEPT
+local notebook_config =
+{
+    prompt = "Notebook",
+    animbank = "ui_board_5x3",
+    animbuild = "ui_board_5x3",
+    menuoffset = Vector3(6, -70, 0),
+
+    cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
+    middlebtn = { text = "Clear", cb = function(inst, doer, widget)
+            print("KK-TEST:inst="..tostring(inst))
+            widget:OverrideText("")
+    end, control = CONTROL_MENU_MISC_2 },
+    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_ACCEPT },
+}
+NotebookMod.makescreen = function(inst, doer)
+    if inst.prefab == "book_notebook" then
+        if doer and doer.HUD then
+            return doer.HUD:ShowWriteableWidget(inst, notebook_config)
+        end
+    end
+end

@@ -1,27 +1,28 @@
 --local Writeable = require("components/writeable")
+local writeables = require("writeables")
+
+local function gettext(inst, reader)
+    local that = inst.components.notebook
+    
+    if that and that.title then
+        local text = "\"" .. that.title or "Untitled" .. "\""
+        if that.writer then
+            text = text .. " by " .. that.writer
+        end
+        
+        return text
+    end
+end
 
 local Notebook = Class(function(self, inst)
-    self.inst       = inst
+    self.inst           = inst
     
-    self.screen     = nil
-    self.writer     = nil
+    self.screen         = nil
+    self.writer         = nil
     
-    self.title      = nil
-    self.writers    = nil
-    self.text       = nil
-    
-    local function gettext(inst, reader)
-        local that = inst.components.notebook
-        
-        if that and that.title then
-            local text = "\"" .. that.title or "Untitled" .. "\""
-            if that.writer then
-                text = text .. " by " .. that.writer
-            end
-            
-            return text
-        end
-    end
+    self.title          = nil
+    self.writers        = nil
+    self.text           = nil
     
     inst.components.inspectable.getspecialdescription = gettext
     inst:AddTag("notebook")
@@ -64,7 +65,7 @@ function Notebook:BeginWriting(doer)
         
         -- Make pop-up window
         if doer.HUD ~= nil then
-            self.screen = writeables.makescreen(self.inst, doer) -- ?
+            self.screen = NotebookMod.makescreen(self.inst, doer) -- ?
         end
     end
 end
@@ -87,7 +88,7 @@ function Notebook:EndWriting()
         end
         
         self.inst:RemoveEventCallback("ms_closepopups", onclosepopups, self.writer)
-        self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
+        self.inst:RemoveEventCallback("onremove", onclosepopups, self.writer)
         
         if self.writers == nil then
             self.writers = {}

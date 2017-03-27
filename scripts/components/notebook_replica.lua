@@ -1,3 +1,5 @@
+local writeables = require("writeables")
+
 local Notebook = Class(function(self, inst)
     self.inst = inst
 
@@ -77,7 +79,7 @@ function Notebook:BeginWriting(doer)
         if doer.HUD == nil then
             -- abort
         else -- if not busy...
-            self.screen = writeables.makescreen(self.inst, doer)
+            self.screen = NotebookMod.makescreen(self.inst, doer)
         end
     end
 end

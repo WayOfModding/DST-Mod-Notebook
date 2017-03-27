@@ -14,7 +14,6 @@ local function onread(inst, reader)
 end
 
 local function onburnt(inst)
-    print("KK-TEST: Function 'onburnt' invoked.")
     inst:RemoveComponent("notebook")
     SpawnPrefab("ash").Transform:SetPosition(inst.Transform:GetWorldPosition())
     inst:Remove()
@@ -24,13 +23,14 @@ local function fn(Sim)
     local inst = CreateEntity()
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
+    inst.entity:AddSoundEmitter()
     inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
     
     inst.AnimState:SetBank("books")
     inst.AnimState:SetBuild("books")
-    inst.AnimState:PlayAnimation("idle")  
+    inst.AnimState:PlayAnimation("idle")
     
     inst.entity:SetPristine()
 
@@ -44,8 +44,6 @@ local function fn(Sim)
     inst.components.inventoryitem.atlasname = "images/inventoryimages/book_notebook.xml"
     
     -- Writeable book --
-    --inst:AddComponent("writeable")
-    --inst:AddComponent("book")
     inst:AddComponent("notebook")
     --------------------
     
@@ -61,4 +59,4 @@ local function fn(Sim)
     return inst
 end
 
-return Prefab( "common/inventory/book_notebook", fn, assets, prefabs) 
+return Prefab("common/inventory/book_notebook", fn, assets, prefabs)
