@@ -147,9 +147,6 @@ local notebook_config =
     end, control = CONTROL_CANCEL },
     middlebtn = { text = "Clear", cb = function(inst, doer, widget)
         widget:OverrideText("")
-        if inst.components.notebook ~= nil then
-            inst.components.notebook:Clear()
-        end
     end, control = CONTROL_MENU_MISC_2 },
     acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
         if inst.components.notebook ~= nil then
