@@ -18,13 +18,13 @@ local NotebookMod =
     DEBUG = true,
 }
 
-
 PrefabFiles =
 {
-"book_notebook",
-"notebook_classified",
+    "book_notebook",
+    "notebook_classified",
 }
 
+-- Strings
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.BOOK_NOTEBOOK = "Should I take down some notes?"
@@ -131,7 +131,7 @@ AddStategraphState("wilson_client", state_notebook)
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 
--- TODO: "book_notebook" misses image on ground
+-- TODO: customize notebook widget
 local Vector3 = GLOBAL.Vector3
 local CONTROL_CANCEL = GLOBAL.CONTROL_CANCEL
 local CONTROL_MENU_MISC_2 = GLOBAL.CONTROL_MENU_MISC_2

@@ -1,5 +1,6 @@
 local assets =
 {
+    Asset("ANIM", "anim/book_notebook.zip"),
     Asset("ATLAS", "images/book_notebook.xml"),
 }
 
@@ -23,8 +24,8 @@ local function fn(Sim)
 
     MakeInventoryPhysics(inst)
     
-    inst.AnimState:SetBank("books")
-    inst.AnimState:SetBuild("books")
+    inst.AnimState:SetBank("book_notebook")
+    inst.AnimState:SetBuild("book_notebook")
     inst.AnimState:PlayAnimation("idle")
     
     inst.entity:SetPristine()

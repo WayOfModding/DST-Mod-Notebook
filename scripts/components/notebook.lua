@@ -1,6 +1,3 @@
---local Writeable = require("components/writeable")
-local writeables = require("writeables")
-
 local function gettext(inst, reader)
     local that = inst.components.notebook
     
