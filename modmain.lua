@@ -19,6 +19,7 @@ GLOBAL.NotebookMod = NotebookMod
 PrefabFiles =
 {
 "book_notebook",
+"notebook_classified",
 }
 
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
@@ -33,8 +34,7 @@ Tabs:
 Requirement:
     None
 --]]
-local recipe_nb = AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE)
-recipe_nb.atlas = "images/inventoryimages/book_notebook.xml"
+AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
 
 AddPrefabPostInit("book_notebook", function(inst)
     if GLOBAL.TheWorld.ismastersim then

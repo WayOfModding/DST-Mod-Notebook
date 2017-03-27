@@ -1,7 +1,7 @@
 local assets =
 {
-    Asset("IMAGE", "images/inventoryimages/book_notebook.tex"),
-    Asset("ATLAS", "images/inventoryimages/book_notebook.xml"),
+    Asset("IMAGE", "images/book_notebook.tex"),
+    Asset("ATLAS", "images/book_notebook.xml"),
 }
 
 local prefabs =
@@ -37,7 +37,7 @@ local function fn(Sim)
     inst:AddComponent("inspectable")
 
     inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.atlasname = "images/inventoryimages/book_notebook.xml"
+    inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
     
     -- Writeable book --
     inst:AddComponent("notebook")
@@ -55,4 +55,4 @@ local function fn(Sim)
     return inst
 end
 
-return Prefab("common/inventory/book_notebook", fn, assets, prefabs)
+return Prefab("book_notebook", fn, assets, prefabs)
