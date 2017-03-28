@@ -1,7 +1,3 @@
---V2C: THIS IS A SCREEN NOT A WIDGET
---...
---...      !!!
-
 local Screen = require "widgets/screen"
 local Widget = require "widgets/widget"
 local Text = require "widgets/text"
