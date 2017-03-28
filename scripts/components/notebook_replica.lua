@@ -79,7 +79,8 @@ function Notebook:BeginWriting(doer)
         if doer.HUD == nil then
             -- abort
         else -- if not busy...
-            self.screen = NotebookMod.makescreen(self.inst, doer)
+            local makescreen = require("screens/notebookscreen")
+            self.screen = makescreen(self.inst, doer)
         end
     end
 end

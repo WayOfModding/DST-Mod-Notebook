@@ -28,6 +28,12 @@ PrefabFiles =
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.BOOK_NOTEBOOK = "Should I take down some notes?"
+STRINGS.NOTEBOOK =
+{
+    BOOKTITLELEFT = "\"",
+    BOOKTITLERIGHT = "\"",
+    MOREWRITERS = ", etc",
+}
 
 --[[
 Ingredient:
@@ -130,46 +136,6 @@ AddStategraphState("wilson_client", state_notebook)
 
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
-
--- TODO: customize notebook widget
--- TODO: remove
-local Vector3 = GLOBAL.Vector3
-local CONTROL_CANCEL = GLOBAL.CONTROL_CANCEL
-local CONTROL_MENU_MISC_2 = GLOBAL.CONTROL_MENU_MISC_2
-local CONTROL_ACCEPT = GLOBAL.CONTROL_ACCEPT
-local notebook_config =
-{
-    prompt = "Notebook",
-    animbank = "ui_board_5x3",
-    animbuild = "ui_board_5x3",
-    menuoffset = Vector3(6, -70, 0),
-
-    cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
-        if inst:IsNotebook() then
-            inst:EndWriting()
-        end
-    end, control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", cb = function(inst, doer, widget)
-        widget:OverrideText("")
-    end, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
-        if inst:IsNotebook() then
-            inst:Write(doer, widget:GetText())
-        end
-    end, control = CONTROL_ACCEPT },
-}
-NotebookMod.makescreen = function(inst, doer)
-    if inst.prefab == "book_notebook" then
-        print("KK-TEST:Function 'NotebookMod.makescreen' invoked.")
-        if doer and doer.HUD then
-            local screen = doer.HUD:ShowWriteableWidget(inst, notebook_config)
-            screen:OverrideText(inst:GetTitle())
-            return screen
-        end
-    end
-end
-
-GLOBAL.NotebookMod = NotebookMod
 
 -- DEBUG
 if NotebookMod and NotebookMod.DEBUG then

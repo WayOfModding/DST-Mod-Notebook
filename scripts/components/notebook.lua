@@ -1,12 +1,12 @@
 local function gettext(inst, reader)
     local that = inst.components.notebook
     
-    if that and that.title then
-        local text = "\"" .. that.title .. "\""
+    if that and that.title and that.title ~= "" then
+        local text = STRINGS.NOTEBOOK.BOOKTITLELEFT .. that.title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
         if that.writers then
             text = text .. " by " .. that.writers[1]
             if #that.writers / 2 > 1 then
-                text = text .. ", etc"
+                text = text .. STRINGS.NOTEBOOK.MOREWRITERS
             end
         end
         
@@ -65,7 +65,8 @@ function Notebook:BeginWriting(doer)
         
         -- Make pop-up window
         if doer.HUD ~= nil then
-            self.screen = NotebookMod.makescreen(self.inst, doer) -- ?
+            local makescreen = require("screens/notebookscreen")
+            self.screen = makescreen(self.inst, doer)
         end
     end
 end

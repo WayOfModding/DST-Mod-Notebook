@@ -18,12 +18,14 @@ local function onaccept(inst, doer, widget)
 
     --strip leading/trailing whitespace
     local msg = widget:GetText()
+    --[[
     local processed_msg = msg:match("^%s*(.-%S)%s*$") or ""
     if msg ~= processed_msg or #msg <= 0 then
         widget.edit_text:SetString(processed_msg)
         widget.edit_text:SetEditing(true)
         return
     end
+    --]]
 
     local writeable = inst.replica.writeable
     if writeable ~= nil then
@@ -34,7 +36,7 @@ local function onaccept(inst, doer, widget)
         widget.config.acceptbtn.cb(inst, doer, widget)
     end
 
-    doer.HUD:CloseWriteableWidget()
+    widget:Close()
 end
 
 local function onmiddle(inst, doer, widget)
@@ -62,7 +64,7 @@ local function oncancel(inst, doer, widget)
         widget.config.cancelbtn.cb(inst, doer, widget)
     end
 
-    doer.HUD:CloseWriteableWidget()
+    widget:Close()
 end
 
 local WriteableWidget = Class(Screen, function(self, owner, writeable, config)
@@ -288,4 +290,50 @@ function WriteableWidget:OnControl(control, down)
     end
 end
 
-return WriteableWidget
+local function ShowWriteableWidget(playerhud, writeable, config)
+    if writeable == nil then
+        return
+    else
+        local screen = WriteableWidget(playerhud.owner, writeable, config)
+        playerhud:OpenScreenUnderPause(screen)
+        if TheFrontEnd:GetActiveScreen() == screen then
+            -- Have to set editing AFTER pushscreen finishes.
+            screen.edit_text:SetEditing(true)
+        end
+        return screen
+    end
+end
+
+local notebook_config =
+{
+    prompt = "Notebook",
+    animbank = "ui_board_5x3",
+    animbuild = "ui_board_5x3",
+    menuoffset = Vector3(6, -70, 0),
+
+    cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
+        if inst:IsNotebook() then
+            inst:EndWriting()
+        end
+    end, control = CONTROL_CANCEL },
+    middlebtn = { text = "Clear", cb = function(inst, doer, widget)
+        widget:OverrideText("")
+    end, control = CONTROL_MENU_MISC_2 },
+    acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
+        if inst:IsNotebook() then
+            inst:Write(doer, widget:GetText())
+        end
+    end, control = CONTROL_ACCEPT },
+}
+
+local function MakeWriteableWidget(inst, doer)
+    if inst.prefab == "book_notebook" then
+        if doer and doer.HUD then
+            local screen = ShowWriteableWidget(doer.HUD, inst, notebook_config)
+            screen:OverrideText(inst:GetTitle())
+            return screen
+        end
+    end
+end
+
+return MakeWriteableWidget
