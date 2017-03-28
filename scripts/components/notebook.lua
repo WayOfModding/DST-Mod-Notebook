@@ -1,3 +1,5 @@
+local makescreen = require("screens/notebookscreen")
+
 local function gettext(inst, reader)
     local that = inst.components.notebook
     
@@ -65,7 +67,6 @@ function Notebook:BeginWriting(doer)
         
         -- Make pop-up window
         if doer.HUD ~= nil then
-            local makescreen = require("screens/notebookscreen")
             self.screen = makescreen(self.inst, doer)
         end
     end
