@@ -132,6 +132,7 @@ AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 
 -- TODO: customize notebook widget
+-- TODO: remove
 local Vector3 = GLOBAL.Vector3
 local CONTROL_CANCEL = GLOBAL.CONTROL_CANCEL
 local CONTROL_MENU_MISC_2 = GLOBAL.CONTROL_MENU_MISC_2
@@ -144,17 +145,16 @@ local notebook_config =
     menuoffset = Vector3(6, -70, 0),
 
     cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
-        if inst.components.notebook ~= nil then
-            inst.components.notebook:EndWriting()
+        if inst:IsNotebook() then
+            inst:EndWriting()
         end
     end, control = CONTROL_CANCEL },
     middlebtn = { text = "Clear", cb = function(inst, doer, widget)
         widget:OverrideText("")
     end, control = CONTROL_MENU_MISC_2 },
     acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
-        if inst.components.notebook ~= nil then
-            inst.components.notebook.title = widget:GetText()
-            inst.components.notebook:EndWriting()
+        if inst:IsNotebook() then
+            inst:Write(doer, widget:GetText())
         end
     end, control = CONTROL_ACCEPT },
 }
@@ -163,7 +163,7 @@ NotebookMod.makescreen = function(inst, doer)
         print("KK-TEST:Function 'NotebookMod.makescreen' invoked.")
         if doer and doer.HUD then
             local screen = doer.HUD:ShowWriteableWidget(inst, notebook_config)
-            screen:OverrideText(inst.components.notebook.title)
+            screen:OverrideText(inst:GetTitle())
             return screen
         end
     end
@@ -177,7 +177,7 @@ if NotebookMod and NotebookMod.DEBUG then
         return item.prefab == "book_notebook"
     end
     
-    local function DebugSimInit(inst)
+    local function DebugPlayerInit(inst)
         if inst and inst.components.inventory then
             if inst.components.inventory:FindItem(IsNotebook) then
                 return
@@ -186,5 +186,5 @@ if NotebookMod and NotebookMod.DEBUG then
         end
     end
 
-    AddSimPostInit(DebugSimInit)
+    AddPlayerPostInit(DebugPlayerInit)
 end

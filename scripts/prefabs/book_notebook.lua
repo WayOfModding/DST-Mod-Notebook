@@ -51,7 +51,26 @@ local function fn(Sim)
     inst.components.burnable:SetOnBurntFn(onburnt)
 
     MakeHauntableLaunch(inst)
-
+    
+    inst.IsNotebook = function(self)
+        return self and self.components.notebook
+    end
+    inst.GetTitle = function(self)
+        return self.components.notebook.title
+    end
+    inst.GetWriters = function(self)
+        return self.components.notebook.writers
+    end
+    inst.GetText = function(self)
+        return self.components.notebook.text
+    end
+    inst.Write = function(self, doer, title, text)
+        self.components.notebook:Write(doer, title, text)
+    end
+    inst.EndWriting = function(self)
+        self.components.notebook:EndWriting()
+    end
+    
     return inst
 end
 
