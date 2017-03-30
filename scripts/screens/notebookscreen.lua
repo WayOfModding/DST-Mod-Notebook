@@ -63,7 +63,32 @@ local function oncancel(inst, doer, widget)
     widget:Close()
 end
 
-local WriteableWidget = Class(Screen, function(self, owner, writeable, config)
+local config =
+{
+    prompt = "Notebook",
+    animbank = "ui_board_5x3",
+    animbuild = "ui_board_5x3",
+    menuoffset = Vector3(6, -70, 0),
+
+    cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
+        if inst:IsNotebook() then
+            inst:EndWriting()
+        end
+    end, control = CONTROL_CANCEL },
+    middlebtn = { text = "Clear", cb = function(inst, doer, widget)
+        widget:OverrideText("")
+    end, control = CONTROL_MENU_MISC_2 },
+    acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
+        if inst:IsNotebook() then
+            inst:Write(doer, widget:GetText())
+        end
+    end, control = CONTROL_ACCEPT },
+    
+    lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_MENU_MISC_1 },
+    nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_MENU_MISC_3 },
+}
+
+local WriteableWidget = Class(Screen, function(self, owner, writeable)
     Screen._ctor(self, "SignWriter")
 
     self.owner = owner
@@ -96,7 +121,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable, config)
     self.root = self.scalingroot:AddChild(Widget("writeablewidgetroot"))
     self.root:SetScale(.6, .6, .6)
 
-    -- secretly this thing is a modal Screen, it just LOOKS like a widget
+    -- Click on the screen will quit Notebook
     self.black = self.root:AddChild(Image("images/global.xml", "square.tex"))
     self.black:SetVRegPoint(ANCHOR_MIDDLE)
     self.black:SetHRegPoint(ANCHOR_MIDDLE)
@@ -108,6 +133,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable, config)
 
     self.bganim = self.root:AddChild(UIAnim())
     self.bganim:SetScale(1, 1, 1)
+    -- Frame
+    -- "images/nbpanel.xml", "nbpanel.tex"
     self.bgimage = self.root:AddChild(Image())
     self.bganim:SetScale(1, 1, 1)
 
@@ -135,11 +162,26 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable, config)
     self.edit_text:EnableScrollEditWindow(false)
 
     self.buttons = {}
-    table.insert(self.buttons, { text = config.cancelbtn.text, cb = function() oncancel(self.writeable, self.owner, self) end, control = config.cancelbtn.control })
-    if config.middlebtn ~= nil then
-        table.insert(self.buttons, { text = config.middlebtn.text, cb = function() onmiddle(self.writeable, self.owner, self) end, control = config.middlebtn.control })
-    end
-    table.insert(self.buttons, { text = config.acceptbtn.text, cb = function() onaccept(self.writeable, self.owner, self) end, control = config.acceptbtn.control })
+    -- Cancel
+    table.insert(self.buttons, { text = config.cancelbtn.text, cb = function()
+        oncancel(self.writeable, self.owner, self)
+    end, control = config.cancelbtn.control })
+    -- Clear
+    table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
+        onmiddle(self.writeable, self.owner, self)
+    end, control = config.middlebtn.control })
+    -- Accept
+    table.insert(self.buttons, { text = config.acceptbtn.text, cb = function()
+        onaccept(self.writeable, self.owner, self)
+    end, control = config.acceptbtn.control })
+    -- Next Page
+    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
+        
+    end, control = config.nextpagebtn.control })
+    -- Last Page
+    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
+        
+    end, control = config.lastpagebtn.control })
 
     for i, v in ipairs(self.buttons) do
         if v.control ~= nil then
@@ -161,16 +203,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable, config)
         self.menu:SetPosition(menuoffset.x - .5 * spacing * (#self.buttons - 1), menuoffset.y, menuoffset.z)
     end
 
-    local defaulttext = ""
-    if self.config.defaulttext ~= nil then
-        if type(self.config.defaulttext) == "string" then
-            defaulttext = self.config.defaulttext
-        elseif type(self.config.defaulttext) == "function" then
-            defaulttext = self.config.defaulttext(self.writeable, self.owner)
-        end
-    end
-
-    self:OverrideText(defaulttext)
     self.edit_text:OnControl(CONTROL_ACCEPT, false)
     self.edit_text.OnTextEntered = function() self:OnControl(CONTROL_ACCEPT, false) end
     self.edit_text:SetHelpTextApply("")
@@ -286,11 +318,11 @@ function WriteableWidget:OnControl(control, down)
     end
 end
 
-local function ShowWriteableWidget(playerhud, writeable, config)
+local function ShowWriteableWidget(playerhud, writeable)
     if writeable == nil then
         return
     else
-        local screen = WriteableWidget(playerhud.owner, writeable, config)
+        local screen = WriteableWidget(playerhud.owner, writeable)
         playerhud:OpenScreenUnderPause(screen)
         if TheFrontEnd:GetActiveScreen() == screen then
             -- Have to set editing AFTER pushscreen finishes.
@@ -300,32 +332,10 @@ local function ShowWriteableWidget(playerhud, writeable, config)
     end
 end
 
-local notebook_config =
-{
-    prompt = "Notebook",
-    animbank = "ui_board_5x3",
-    animbuild = "ui_board_5x3",
-    menuoffset = Vector3(6, -70, 0),
-
-    cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
-        if inst:IsNotebook() then
-            inst:EndWriting()
-        end
-    end, control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", cb = function(inst, doer, widget)
-        widget:OverrideText("")
-    end, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
-        if inst:IsNotebook() then
-            inst:Write(doer, widget:GetText())
-        end
-    end, control = CONTROL_ACCEPT },
-}
-
 local function MakeWriteableWidget(inst, doer)
     if inst.prefab == "book_notebook" then
         if doer and doer.HUD then
-            local screen = ShowWriteableWidget(doer.HUD, inst, notebook_config)
+            local screen = ShowWriteableWidget(doer.HUD, inst)
             screen:OverrideText(inst:GetTitle())
             return screen
         end
