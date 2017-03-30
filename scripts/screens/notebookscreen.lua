@@ -147,7 +147,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     --self.edit_text_bg:SetPosition(0, 5, 0)
     --self.edit_text_bg:ScaleToSize(480, 50)
 
-    self.edit_text = self.root:AddChild(TextEdit(BUTTONFONT, 50, ""))
+    self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     self.edit_text:SetForceEdit(true)
     self.edit_text:SetPosition(0, 40, 0)
