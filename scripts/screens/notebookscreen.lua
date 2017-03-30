@@ -134,8 +134,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.bganim = self.root:AddChild(UIAnim())
     self.bganim:SetScale(1, 1, 1)
     -- Frame
-    -- "images/nbpanel.xml", "nbpanel.tex"
-    self.bgimage = self.root:AddChild(Image())
+    --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
+    self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
     self.bganim:SetScale(1, 1, 1)
 
     --self.title = self.root:AddChild(Text(BUTTONFONT, 50))
