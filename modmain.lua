@@ -13,10 +13,7 @@ local ActionHandler = GLOBAL.ActionHandler
 local SpawnPrefab = GLOBAL.SpawnPrefab
 local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
 
-local NotebookMod =
-{
-    DEBUG = true,
-}
+local NotebookMod = {}
 
 PrefabFiles =
 {
@@ -83,7 +80,9 @@ local state_notebook = State{
         inst.AnimState:PlayAnimation("action_uniqueitem_pre")
         inst.AnimState:PushAnimation("book", false)
         inst.AnimState:Show("ARM_normal")
-        inst.components.inventory:ReturnActiveActionItem(inst.bufferedaction ~= nil and (inst.bufferedaction.target or inst.bufferedaction.invobject) or nil)
+        if inst.components.inventory then
+            inst.components.inventory:ReturnActiveActionItem(inst.bufferedaction ~= nil and (inst.bufferedaction.target or inst.bufferedaction.invobject) or nil)
+        end
     end,
 
     timeline =
@@ -121,7 +120,9 @@ local state_notebook = State{
     },
 
     onexit = function(inst)
-        if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS) then
+        if inst.components.inventory
+            and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
+        then
             inst.AnimState:Show("ARM_carry")
             inst.AnimState:Hide("ARM_normal")
         end
@@ -137,20 +138,44 @@ AddStategraphState("wilson_client", state_notebook)
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 
--- DEBUG
-if NotebookMod and NotebookMod.DEBUG then
-    local function IsNotebook(item)
-        return item.prefab == "book_notebook"
-    end
-    
-    local function DebugPlayerInit(inst)
-        if inst and inst.components.inventory then
-            if inst.components.inventory:FindItem(IsNotebook) then
-                return
-            end
-            inst.components.inventory:GiveItem(SpawnPrefab("book_notebook"))
-        end
-    end
+NotebookMod.RPC =
+{
+    NOTEBOOK =
+    {
+        SetTitle =
+        {
+            fn = function(book, doer, title)
+                if not (checkentity(book)
+                    and optstring(title))
+                then
+                    printinvalid("SetTitle", doer)
+                    return
+                end
+                if book:IsNotebook() then
+                    book:SetTitle(doer, title)
+                end
+            end,
+        },
+        SetPage =
+        {
+            fn = function(book, doer, page, text)
+                if not (checkentity(book)
+                    and checknumber(page)
+                    and optstring(text))
+                then
+                    printinvalid("SetPage", doer)
+                    return
+                end
+                if book:IsNotebook() then
+                    book:SetPage(doer, page, text)
+                end
+            end,
+        },
+    },
+}
 
-    AddPlayerPostInit(DebugPlayerInit)
+for namespace, nstable in pairs(NotebookMod.RPC) do
+    for name, attr in pairs(nstable) do
+        AddModRPCHandler(namespace, name, attr.fn)
+    end
 end

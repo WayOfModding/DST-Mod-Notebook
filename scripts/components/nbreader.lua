@@ -9,9 +9,11 @@ function NotebookReader:OnRemoveFromEntity()
 end
 
 function NotebookReader:Read(book)
-    if book and book.components and book.components.notebook then
-        if book.components.notebook:OnRead(self.inst) then
-            return true
+    if book then
+        if book.components.notebook then
+            if book.components.notebook:OnRead(self.inst) then
+                return true
+            end
         end
     end
 end

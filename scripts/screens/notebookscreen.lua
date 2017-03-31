@@ -10,28 +10,25 @@ local function onaccept(inst, doer, widget)
     if not widget.isopen then
         return
     end
-    -- print("OnAccept",inst,doer,widget)
-
-    --strip leading/trailing whitespace
+    print("KK-TEST:Function 'onaccept' invoked!", inst, doer, widget)
+    
     local msg = widget:GetText()
-    --[[
-    local processed_msg = msg:match("^%s*(.-%S)%s*$") or ""
-    if msg ~= processed_msg or #msg <= 0 then
-        widget.edit_text:SetString(processed_msg)
-        widget.edit_text:SetEditing(true)
-        return
-    end
-    --]]
-
-    local writeable = inst.replica.writeable
-    if writeable ~= nil then
-        writeable:Write(doer, msg)
+    for page, text in pairs(widget.pages) do
+        print("KK-TEST> page="..tostring(page)..", text='"..text.."'")
+        if widget.marks[page] then
+            if page == 0 then
+                inst:SetTitle(doer, msg)
+            else
+                inst:SetPage(doer, page, msg)
+            end
+        end
     end
 
     if widget.config.acceptbtn.cb ~= nil then
         widget.config.acceptbtn.cb(inst, doer, widget)
     end
 
+    inst:EndWriting()
     widget:Close()
 end
 
@@ -39,9 +36,9 @@ local function onmiddle(inst, doer, widget)
     if not widget.isopen then
         return
     end
-    --print("OnMiddle",inst,doer,widget)
-
-    widget.config.middlebtn.cb(inst, doer, widget)
+    
+    widget:OverrideText("")
+    
     widget.edit_text:SetEditing(true)
 end
 
@@ -49,12 +46,8 @@ local function oncancel(inst, doer, widget)
     if not widget.isopen then
         return
     end
-    --print("OnCancel",inst,doer,widget)
-
-    local writeable = inst.replica.writeable
-    if writeable ~= nil then
-        writeable:Write(doer, nil)
-    end
+    
+    inst:EndWriting()
 
     if widget.config.cancelbtn.cb ~= nil then
         widget.config.cancelbtn.cb(inst, doer, widget)
@@ -68,24 +61,14 @@ local config =
     prompt = "Notebook",
     animbank = "ui_board_5x3",
     animbuild = "ui_board_5x3",
-    menuoffset = Vector3(6, -70, 0),
+    menuoffset = Vector3(6, -250, 0),
 
-    cancelbtn = { text = "Cancel", cb = function(inst, doer, widget)
-        if inst:IsNotebook() then
-            inst:EndWriting()
-        end
-    end, control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", cb = function(inst, doer, widget)
-        widget:OverrideText("")
-    end, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = function(inst, doer, widget)
-        if inst:IsNotebook() then
-            inst:Write(doer, widget:GetText())
-        end
-    end, control = CONTROL_ACCEPT },
+    cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
+    middlebtn = { text = "Clear", cb = nil, control = CONTROL_MENU_MISC_2 },
+    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_ACCEPT },
     
-    lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_MENU_MISC_1 },
-    nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_MENU_MISC_3 },
+    lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_ZOOM_IN },
+    nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_ZOOM_OUT },
 }
 
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
@@ -150,8 +133,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     self.edit_text:SetForceEdit(true)
-    self.edit_text:SetPosition(0, 40, 0)
-    self.edit_text:SetRegionSize(640, 60)
+    self.edit_text:SetPosition(0, 200, 0)
+    self.edit_text:SetRegionSize(800, 60)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
     self.edit_text:SetVAlign(ANCHOR_TOP)
     --self.edit_text:SetFocusedImage(self.edit_text_bg, "images/textboxes.xml", "textbox_long_over.tex", "textbox_long.tex")
@@ -161,6 +144,55 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:EnableRegionSizeLimit(true)
     self.edit_text:EnableScrollEditWindow(false)
 
+    -------------------------------------------------------------------------------
+    -- Pages
+    -------------------------------------------------------------------------------
+    self.page = 0
+    self.pages = {}
+    self.marks = {}
+    local function OnPageUpdated(page)
+        local res = self.pages[page]
+        if not res then
+            if page == 0 then
+                res = writeable:GetTitle() or ""
+                self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+            else
+                res = writeable:GetPage(page) or ""
+                self.edit_text:SetHAlign(ANCHOR_LEFT)
+            end
+        end
+        self.edit_text:SetString(res)
+    end
+    local function MarkCurrent()
+        self.pages[self.page] = self.edit_text:GetString() or ""
+        self.marks[self.page] = true
+    end
+    local function UpdatePage(page)
+        self.page = page
+        OnPageUpdated(page)
+        self.edit_text:SetEditing(true)
+    end
+    local function LastPage()
+        local oldpage = self.page
+        local newpage = oldpage - 1
+        if newpage < 0 then newpage = 0 end
+        if newpage < oldpage then
+            UpdatePage(newpage)
+        end
+        print("LastPage()", oldpage, newpage)
+    end
+    local function NextPage()
+        local oldpage = self.page
+        local newpage = oldpage + 1
+        if newpage > oldpage then
+            UpdatePage(newpage)
+        end
+        print("NextPage()", oldpage, newpage)
+    end
+    
+    -------------------------------------------------------------------------------
+    -- Buttons
+    -------------------------------------------------------------------------------
     self.buttons = {}
     -- Cancel
     table.insert(self.buttons, { text = config.cancelbtn.text, cb = function()
@@ -168,26 +200,24 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end, control = config.cancelbtn.control })
     -- Clear
     table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
+        MarkCurrent()
         onmiddle(self.writeable, self.owner, self)
     end, control = config.middlebtn.control })
     -- Accept
     table.insert(self.buttons, { text = config.acceptbtn.text, cb = function()
         onaccept(self.writeable, self.owner, self)
     end, control = config.acceptbtn.control })
-    -- Next Page
-    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
-        
-    end, control = config.nextpagebtn.control })
     -- Last Page
-    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
-        
-    end, control = config.lastpagebtn.control })
+    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = LastPage, control = config.lastpagebtn.control })
+    -- Next Page
+    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = NextPage, control = config.nextpagebtn.control })
 
     for i, v in ipairs(self.buttons) do
         if v.control ~= nil then
             self.edit_text:SetPassControlToScreen(v.control, true)
         end
     end
+    -------------------------------------------------------------------------------
 
     local menuoffset = config.menuoffset or Vector3(0, 0, 0)
     if TheInput:ControllerAttached() then
@@ -204,7 +234,13 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end
 
     self.edit_text:OnControl(CONTROL_ACCEPT, false)
-    self.edit_text.OnTextEntered = function() self:OnControl(CONTROL_ACCEPT, false) end
+    self.edit_text.OnTextInputted = function()
+        --print("KK-TEST> OnTextInputted: "..self:GetText())
+        MarkCurrent()
+    end
+    self.edit_text.OnTextEntered = function()
+        self:OnControl(CONTROL_ACCEPT, false)
+    end
     self.edit_text:SetHelpTextApply("")
     self.edit_text:SetHelpTextCancel("")
     self.edit_text:SetHelpTextEdit("")

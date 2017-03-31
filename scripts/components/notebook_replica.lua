@@ -84,14 +84,32 @@ function Notebook:BeginWriting(doer)
     end
 end
 
-function Notebook:Write(doer, text)
-    --NOTE: text may be network data, so enforcing length is
-    --      NOT redundant in order for rendering to be safe.
-    if self.inst.components.notebook ~= nil then
-        self.inst.components.notebook:Write(doer, text)
-    elseif self.classified ~= nil and doer == ThePlayer
-        and (text == nil or text:utf8len() <= MAX_WRITEABLE_LENGTH) then
-        SendRPCToServer(RPC.SetWriteableText, self.inst, text)
+local function SendRPCToServer(namespace, name, ...)
+    local id_table = { namespace = namespace, id = MOD_RPC[namespace][name].id }
+    SendModRPCToServer(id_table, ...)
+end
+
+function Notebook:SetTitle(doer, title)
+    if doer and title then
+        if self.inst.components.notebook ~= nil then
+            self.inst.components.notebook:SetTitle(doer, title)
+        elseif self.classified ~= nil and doer == ThePlayer
+            and (title == nil or title:utf8len() <= MAX_WRITEABLE_LENGTH)
+        then
+            SendRPCToServer("NOTEBOOK", "SetTitle", self.inst, doer, title)
+        end
+    end
+end
+
+function Notebook:SetPage(doer, page, text)
+    if doer and checknumber(page) then
+        if self.inst.components.notebook ~= nil then
+            self.inst.components.notebook:SetPage(doer, page, text)
+        elseif self.classified ~= nil and doer == ThePlayer
+            and (text == nil or text:utf8len() <= MAX_WRITEABLE_LENGTH)
+        then
+            SendRPCToServer("NOTEBOOK", "SetPage", self.inst, doer, page, text)
+        end
     end
 end
 
@@ -104,7 +122,9 @@ function Notebook:EndWriting()
         self.inst.components.notebook:EndWriting()
     elseif self.screen ~= nil then
         if ThePlayer ~= nil and ThePlayer.HUD ~= nil then
-            ThePlayer.HUD:CloseWriteableWidget()
+            if self.screen then
+                self.screen:Close()
+            end
         elseif self.screen.inst:IsValid() then
             --Should not have screen and no writer, but just in case...
             self.screen:Kill()

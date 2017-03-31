@@ -24,22 +24,22 @@ local Notebook = Class(function(self, inst)
     
     self.title          = nil
     self.writers        = nil
-    self.text           = nil
+    self.pages          = {}
     
     inst.components.inspectable.getspecialdescription = gettext
     inst:AddTag("notebook")
-end)
 
-local function onclosepopups(doer)
-    self:EndWriting()
-end
+    self.onclosepopups = function(doer)
+        self:EndWriting()
+    end
+end)
 
 function Notebook:OnSave()
     local data = {}
     
     data.title      = self.title
     data.writers    = self.writers
-    data.text       = self.text
+    data.pages      = self.pages
     
     return data
 end
@@ -47,7 +47,7 @@ end
 function Notebook:OnLoad(data)
     self.title      = data.title
     self.writers    = data.writers
-    self.text       = data.text
+    self.pages      = data.pages
 end
 
 function Notebook:OnRead(doer)
@@ -62,8 +62,8 @@ function Notebook:BeginWriting(doer)
         
         self.writer = doer
         -- Trigger when the pop-up window is closed
-        self.inst:ListenForEvent("ms_closepopups", onclosepopups, doer)
-        self.inst:ListenForEvent("onremove", onclosepopups, doer)
+        self.inst:ListenForEvent("ms_closepopups", self.onclosepopups, doer)
+        self.inst:ListenForEvent("onremove", self.onclosepopups, doer)
         
         -- Make pop-up window
         if doer.HUD ~= nil then
@@ -72,11 +72,15 @@ function Notebook:BeginWriting(doer)
     end
 end
 
-function Notebook:Write(doer, title, text)
+function Notebook:SetTitle(doer, title)
     if doer ~= nil and self.writer == doer then
         self.title = title
-        self.text = text
-        self:EndWriting()
+    end
+end
+
+function Notebook:SetPage(doer, page, text)
+    if doer ~= nil and self.writer == doer then
+        self.pages[page] = text
     end
 end
 
@@ -89,12 +93,12 @@ function Notebook:EndWriting()
         self.inst:StopUpdatingComponent(self)
         
         if self.screen ~= nil then
-            self.writer.HUD:CloseWriteableWidget()
+            self.screen:Close()
             self.screen = nil
         end
         
-        self.inst:RemoveEventCallback("ms_closepopups", onclosepopups, self.writer)
-        self.inst:RemoveEventCallback("onremove", onclosepopups, self.writer)
+        self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, self.writer)
+        self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
         
         if self.writers == nil then
             self.writers = {}
@@ -119,7 +123,7 @@ end
 function Notebook:Clear()
     self.title = nil
     self.writers = nil
-    self.text = nil
+    self.pages = {}
 end
 
 -- Invoked when this component is removed from entity
