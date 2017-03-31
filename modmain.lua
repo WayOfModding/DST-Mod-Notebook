@@ -56,9 +56,9 @@ end)
 local action_nbread = AddAction("NBREAD", "Read", function(act)
     local targ = act.target or act.invobject
     if targ ~= nil
-            and act.doer ~= nil
-            and targ.components.notebook ~= nil
-            and act.doer.components.nbreader ~= nil
+        and act.doer ~= nil
+        and targ.components.notebook ~= nil
+        and act.doer.components.nbreader ~= nil
     then
         return act.doer.components.nbreader:Read(targ)
     end

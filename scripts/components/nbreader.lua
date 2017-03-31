@@ -11,9 +11,7 @@ end
 function NotebookReader:Read(book)
     if book then
         if book.components.notebook then
-            if book.components.notebook:OnRead(self.inst) then
-                return true
-            end
+            return book.components.notebook:OnRead(self.inst)
         end
     end
 end
