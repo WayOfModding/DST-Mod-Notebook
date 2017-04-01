@@ -1,6 +1,6 @@
 name = "Notebook"
 author = "KaiserKatze"
-version = "1.0"
+version = "1.1"
 description = "Version "..version.."\n"..[[
 The palest ink is better than the best memory.
 
