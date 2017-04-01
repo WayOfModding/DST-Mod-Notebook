@@ -6,29 +6,63 @@ local Menu = require "widgets/menu"
 local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
 
+local function GetTitle(book)
+    if not TheWorld.ismastersim then
+        return book.replica.notebook:GetTitle()
+    else
+        return book.components.notebook:GetTitle()
+    end
+end
+
+local function GetPage(book, page)
+    if not TheWorld.ismastersim then
+        return book.replica.notebook:GetPage(page)
+    else
+        return book.components.notebook:GetPage(page)
+    end
+end
+
+local function SetTitle(book, doer, title)
+    if not TheWorld.ismastersim then
+        book.replica.notebook.classified:SetTitle(doer, title)
+    else
+        book.components.notebook:SetTitle(doer, title)
+    end
+end
+
+local function SetPages(book, doer, pages, marks)
+    -- Filter pages that ain't modified
+    for page, mark in pairs(marks) do
+        marks[page] = pages[page]
+    end
+    if not TheWorld.ismastersim then
+        book.replica.notebook.classified:SetPages(doer, marks)
+    else
+        book.components.notebook:SetPages(doer, marks)
+    end
+end
+
+local function EndWriting(book)
+    if not TheWorld.ismastersim then
+        book.replica.notebook:EndWriting()
+    else
+        book.components.notebook:EndWriting()
+    end
+end
+
 local function onaccept(inst, doer, widget)
     if not widget.isopen then
         return
     end
-    print("KK-TEST:Function 'onaccept' invoked!", inst, doer, widget)
     
-    local msg = widget:GetText()
-    for page, text in pairs(widget.pages) do
-        print("KK-TEST> page="..tostring(page)..", text='"..text.."'")
-        if widget.marks[page] then
-            if page == 0 then
-                inst:SetTitle(doer, msg)
-            else
-                inst:SetPage(doer, page, msg)
-            end
-        end
-    end
+    SetTitle(inst, doer, widget.title)
+    SetPages(inst, doer, widget.pages, widget.marks)
 
     if widget.config.acceptbtn.cb ~= nil then
         widget.config.acceptbtn.cb(inst, doer, widget)
     end
 
-    inst:EndWriting()
+    EndWriting()
     widget:Close()
 end
 
@@ -47,7 +81,7 @@ local function oncancel(inst, doer, widget)
         return
     end
     
-    inst:EndWriting()
+    EndWriting()
 
     if widget.config.cancelbtn.cb ~= nil then
         widget.config.cancelbtn.cb(inst, doer, widget)
@@ -148,24 +182,33 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Pages
     -------------------------------------------------------------------------------
     self.page = 0
+    self.title = nil
     self.pages = {}
     self.marks = {}
     local function OnPageUpdated(page)
-        local res = self.pages[page]
+        local res = page == 0 and self.title or self.pages[page]
         if not res then
             if page == 0 then
-                res = writeable:GetTitle() or ""
+                res = GetTitle(writeable) or ""
                 self.edit_text:SetHAlign(ANCHOR_MIDDLE)
             else
-                res = writeable:GetPage(page) or ""
+                res = GetPage(writeable, page) or ""
                 self.edit_text:SetHAlign(ANCHOR_LEFT)
             end
         end
         self.edit_text:SetString(res)
     end
+    local function MarkPage(page)
+        local text = self.edit_text:GetString() or ""
+        if page == 0 then
+            self.title = title
+        else
+            self.pages[page] = text
+            self.marks[page] = true
+        end
+    end
     local function MarkCurrent()
-        self.pages[self.page] = self.edit_text:GetString() or ""
-        self.marks[self.page] = true
+        MarkPage(self.page)
     end
     local function UpdatePage(page)
         self.page = page
@@ -178,16 +221,14 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         if newpage < 0 then newpage = 0 end
         if newpage < oldpage then
             UpdatePage(newpage)
-        end
-        print("LastPage()", oldpage, newpage)
+        end]
     end
     local function NextPage()
         local oldpage = self.page
         local newpage = oldpage + 1
         if newpage > oldpage then
             UpdatePage(newpage)
-        end
-        print("NextPage()", oldpage, newpage)
+        end]
     end
     
     -------------------------------------------------------------------------------
@@ -372,7 +413,7 @@ local function MakeWriteableWidget(inst, doer)
     if inst.prefab == "book_notebook" then
         if doer and doer.HUD then
             local screen = ShowWriteableWidget(doer.HUD, inst)
-            screen:OverrideText(inst:GetTitle())
+            screen:OverrideText(GetTitle(inst))
             return screen
         end
     end

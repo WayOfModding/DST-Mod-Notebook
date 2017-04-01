@@ -4,26 +4,16 @@ local function gettext(inst, reader)
     local that = inst.components.notebook
     
     if that and that.title and that.title ~= "" then
-        local text = STRINGS.NOTEBOOK.BOOKTITLELEFT .. that.title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
-        if that.writers then
-            text = text .. " by " .. that.writers[1]
-            if #that.writers / 2 > 1 then
-                text = text .. STRINGS.NOTEBOOK.MOREWRITERS
-            end
-        end
-        
-        return text
+        return STRINGS.NOTEBOOK.BOOKTITLELEFT .. that.title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
     end
 end
 
 local Notebook = Class(function(self, inst)
     self.inst           = inst
     
-    self.screen         = nil
     self.writer         = nil
     
     self.title          = nil
-    self.writers        = nil
     self.pages          = {}
     
     inst.components.inspectable.getspecialdescription = gettext
@@ -38,7 +28,6 @@ function Notebook:OnSave()
     local data = {}
     
     data.title      = self.title
-    data.writers    = self.writers
     data.pages      = self.pages
     
     return data
@@ -46,13 +35,12 @@ end
 
 function Notebook:OnLoad(data)
     self.title      = data.title
-    self.writers    = data.writers
     self.pages      = data.pages
-end
-
-function Notebook:OnRead(doer)
-    self:BeginWriting(doer)
-    return true
+    -- Notify client
+    self.inst.replica.classified.title:set_local(self.title)
+    self.inst.replica.classified.title:set(self.title)
+    self.inst.replica.classified.pages:set_local(self.pages)
+    self.inst.replica.classified.pages:set(self.pages)
 end
 
 function Notebook:BeginWriting(doer)
@@ -67,9 +55,17 @@ function Notebook:BeginWriting(doer)
         
         -- Make pop-up window
         if doer.HUD ~= nil then
-            self.screen = makescreen(self.inst, doer)
+            makescreen(self.inst, doer)
         end
     end
+end
+
+function Notebook:GetTitle()
+    return self.title
+end
+
+function Notebook:GetPage(page)
+    return self.pages[page]
 end
 
 function Notebook:SetTitle(doer, title)
@@ -78,51 +74,27 @@ function Notebook:SetTitle(doer, title)
     end
 end
 
-function Notebook:SetPage(doer, page, text)
+function Notebook:SetPages(doer, pages)
     if doer ~= nil and self.writer == doer then
-        self.pages[page] = text
+        for page, text in pairs(pages)
+            self.pages[page] = text
+        end
     end
-end
-
-local function GetPlayerName(player)
-    return player.Network:GetClientName() --, player.Network:GetUserID()
 end
 
 function Notebook:EndWriting()
     if self.writer ~= nil then
         self.inst:StopUpdatingComponent(self)
         
-        if self.screen ~= nil then
-            self.screen:Close()
-            self.screen = nil
-        end
-        
         self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, self.writer)
         self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
         
-        if self.writers == nil then
-            self.writers = {}
-        end
-        local player_name = GetPlayerName(self.writer)
-        if self.writers[player_name] == nil then
-            -- set
-            self.writers[player_name] = true
-            -- list
-            table.insert(self.writers, player_name)
-        end
-        
         self.writer = nil
-    elseif self.screen ~= nil then
-        if self.screen.inst:IsValid() then
-            self.screen:Kill()
-        end
-        self.screen = nil
     end
 end
 
 function Notebook:Clear()
     self.title = nil
-    self.writers = nil
     self.pages = {}
 end
 

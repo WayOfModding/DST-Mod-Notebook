@@ -3,9 +3,6 @@ local makescreen = require("screens/notebookscreen")
 local Notebook = Class(function(self, inst)
     self.inst = inst
 
-    self.screen = nil
-    self.opentask = nil
-
     if TheWorld.ismastersim then
         self.classified = SpawnPrefab("notebook_classified")
         self.classified.entity:SetParent(inst.entity)
@@ -41,8 +38,15 @@ Notebook.OnRemoveEntity = Notebook.OnRemoveFromEntity
 --------------------------------------------------------------------------
 
 local function BeginWriting(inst, self)
-    self.opentask = nil
     self:BeginWriting(ThePlayer)
+end
+
+function Notebook:GetTitle()
+    return self.classified.title:value()
+end
+
+function Notebook:GetPage(page)
+    return self.classified.pages:value()[page]
 end
 
 function Notebook:AttachClassified(classified)
@@ -51,7 +55,7 @@ function Notebook:AttachClassified(classified)
     self.ondetachclassified = function() self:DetachClassified() end
     self.inst:ListenForEvent("onremove", self.ondetachclassified, classified)
 
-    self.opentask = self.inst:DoTaskInTime(0, BeginWriting, self)
+    self.inst:DoTaskInTime(0, BeginWriting, self)
 end
 
 function Notebook:DetachClassified()
@@ -66,70 +70,22 @@ end
 
 function Notebook:BeginWriting(doer)
     if self.inst.components.notebook ~= nil then
-        if self.opentask ~= nil then
-            self.opentask:Cancel()
-            self.opentask = nil
-        end
         self.inst.components.notebook:BeginWriting(doer)
     elseif self.classified ~= nil
-        and self.opentask == nil
         and doer ~= nil
         and doer == ThePlayer then
 
         if doer.HUD == nil then
             -- abort
         else -- if not busy...
-            self.screen = makescreen(self.inst, doer)
-        end
-    end
-end
-
-local function SendRPCToServer(namespace, name, ...)
-    local id_table = { namespace = namespace, id = MOD_RPC[namespace][name].id }
-    SendModRPCToServer(id_table, ...)
-end
-
-function Notebook:SetTitle(doer, title)
-    if doer and title then
-        if self.inst.components.notebook ~= nil then
-            self.inst.components.notebook:SetTitle(doer, title)
-        elseif self.classified ~= nil and doer == ThePlayer
-            and (title == nil or title:utf8len() <= MAX_WRITEABLE_LENGTH)
-        then
-            SendRPCToServer("NOTEBOOK", "SetTitle", self.inst, doer, title)
-        end
-    end
-end
-
-function Notebook:SetPage(doer, page, text)
-    if doer and checknumber(page) then
-        if self.inst.components.notebook ~= nil then
-            self.inst.components.notebook:SetPage(doer, page, text)
-        elseif self.classified ~= nil and doer == ThePlayer
-            and (text == nil or text:utf8len() <= MAX_WRITEABLE_LENGTH)
-        then
-            SendRPCToServer("NOTEBOOK", "SetPage", self.inst, doer, page, text)
+            makescreen(self.inst, doer)
         end
     end
 end
 
 function Notebook:EndWriting()
-    if self.opentask ~= nil then
-        self.opentask:Cancel()
-        self.opentask = nil
-    end
     if self.inst.components.notebook ~= nil then
         self.inst.components.notebook:EndWriting()
-    elseif self.screen ~= nil then
-        if ThePlayer ~= nil and ThePlayer.HUD ~= nil then
-            if self.screen then
-                self.screen:Close()
-            end
-        elseif self.screen.inst:IsValid() then
-            --Should not have screen and no writer, but just in case...
-            self.screen:Kill()
-        end
-        self.screen = nil
     end
 end
 

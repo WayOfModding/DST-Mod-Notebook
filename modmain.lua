@@ -29,7 +29,6 @@ STRINGS.NOTEBOOK =
 {
     BOOKTITLELEFT = "\"",
     BOOKTITLERIGHT = "\"",
-    MOREWRITERS = ", etc",
 }
 
 --[[
@@ -70,6 +69,8 @@ AddComponentAction("INVENTORY", "nbreader", function(inst, doer, actions)
         table.insert(actions, ACTIONS.NBREAD)
     end
 end)
+
+AddReplicableComponent("notebook")
 
 local state_notebook = State{
     name = "notebook",
@@ -151,23 +152,21 @@ NotebookMod.RPC =
                     printinvalid("SetTitle", doer)
                     return
                 end
-                if book:IsNotebook() then
+                if book.components.notebook then
                     book:SetTitle(doer, title)
                 end
             end,
         },
-        SetPage =
+        SetPages =
         {
-            fn = function(book, doer, page, text)
-                if not (checkentity(book)
-                    and checknumber(page)
-                    and optstring(text))
+            fn = function(book, doer, pages)
+                if not (checkentity(book))
                 then
-                    printinvalid("SetPage", doer)
+                    printinvalid("SetPages", doer)
                     return
                 end
-                if book:IsNotebook() then
-                    book:SetPage(doer, page, text)
+                if book.components.notebook then
+                    book:SetPages(doer, pages)
                 end
             end,
         },

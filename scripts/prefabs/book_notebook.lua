@@ -52,49 +52,6 @@ local function fn(Sim)
 
     MakeHauntableLaunch(inst)
     
-    inst.IsNotebook = function(self)
-        return self and self.components.notebook
-    end
-    inst.GetTitle = function(self)
-        return self.components.notebook.title
-    end
-    inst.GetWriters = function(self)
-        return self.components.notebook.writers
-    end
-    inst.GetPage = function(self, page)
-        return self.components.notebook.pages[page]
-    end
-    inst.SetTitle = function(self, doer, title)
-        print(string.format("KK-TEST> book_notebook:SetTitle(%s, %s)",
-            tostring(doer), tostring(title)))
-        print("self.components.notebook=\t"..tostring(self.components.notebook))
-        print("self.replica.notebook=\t"..tostring(self.replica.notebook))
-        if self.components.notebook then
-            self.components.notebook:SetTitle(doer, title)
-        end
-        if self.replica.notebook then
-            self.replica.notebook:SetTitle(doer, title)
-        end
-    end
-    inst.SetPage = function(self, doer, page, text)
-        print(string.format("KK-TEST> book_notebook:SetPage(%s, %s, %s)",
-            tostring(doer), tostring(page), tostring(text)))
-        if self.components.notebook then
-            self.components.notebook:SetPage(doer, page, text)
-        end
-        if self.replica.notebook then
-            self.replica.notebook:SetPage(doer, page, text)
-        end
-    end
-    inst.EndWriting = function(self)
-        if self.components.notebook then
-            self.components.notebook:EndWriting()
-        end
-        if self.replica.notebook then
-            self.replica.notebook:EndWriting()
-        end
-    end
-    
     return inst
 end
 

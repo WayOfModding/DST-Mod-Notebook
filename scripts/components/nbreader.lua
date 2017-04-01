@@ -9,11 +9,13 @@ function NotebookReader:OnRemoveFromEntity()
 end
 
 function NotebookReader:Read(book)
-    if book then
-        if book.components.notebook then
-            return book.components.notebook:OnRead(self.inst)
-        end
+    if not book then return end
+    if TheWorld.ismastersim then
+        notebook = book.components.notebook
+    else
+        notebook = book.replica.notebook
     end
+    return notebook:BeginWriting(self.inst)
 end
 
 return NotebookReader
