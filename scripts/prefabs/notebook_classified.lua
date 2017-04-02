@@ -48,8 +48,10 @@ local function SendRPC(namespace, name, ...)
 end
 
 local function SetPages(inst, doer, pages)
-    print("KK-TEST> SendRPC:", inst._parent, doer, pages)
-    SendRPC("NOTEBOOK", "SetPages", inst._parent, doer, pages)
+    local book = inst._parent
+    assert(book ~= nil and book:IsValid() and book.prefab and book.prefab == "book_notebook", "Invalid inst parent!")
+    print("KK-TEST> SendRPC:", book, doer, pages)
+    SendRPC("NOTEBOOK", "SetPages", book, doer, pages)
 end
 
 --------------------------------------------------------------------------

@@ -43,16 +43,16 @@ end
 
 function Notebook:GetPage(page)
     if self.classified == nil then
-        print("Notebook:GetPage: 'self.classified' is nil")
+        print("Notebook(replica):GetPage: 'self.classified' is nil")
         return
     end
     if self.classified.pages == nil then
-        print("Notebook:GetPage: 'self.classified.pages' is nil")
+        print("Notebook(replica):GetPage: 'self.classified.pages' is nil")
         return
     end
     local pages = self.classified.pages:value()
     if pages == nil then
-        print("Notebook:GetPage: local 'pages' is nil")
+        print("Notebook(replica):GetPage: local 'pages' is nil")
         return
     end
     return pages[page]
