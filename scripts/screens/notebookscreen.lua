@@ -6,14 +6,6 @@ local Menu = require "widgets/menu"
 local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
 
-local function GetTitle(book)
-    if not TheWorld.ismastersim then
-        return book.replica.notebook:GetTitle()
-    else
-        return book.components.notebook:GetTitle()
-    end
-end
-
 local function GetPage(book, page)
     if not TheWorld.ismastersim then
         return book.replica.notebook:GetPage(page)
@@ -22,12 +14,8 @@ local function GetPage(book, page)
     end
 end
 
-local function SetTitle(book, doer, title)
-    if not TheWorld.ismastersim then
-        book.replica.notebook.classified:SetTitle(doer, title)
-    else
-        book.components.notebook:SetTitle(doer, title)
-    end
+local function GetTitle(book)
+    return GetPage(book, 0)
 end
 
 local function SetPages(book, doer, pages, marks)
@@ -55,14 +43,13 @@ local function onaccept(inst, doer, widget)
         return
     end
     
-    SetTitle(inst, doer, widget.title)
     SetPages(inst, doer, widget.pages, widget.marks)
 
     if widget.config.acceptbtn.cb ~= nil then
         widget.config.acceptbtn.cb(inst, doer, widget)
     end
 
-    EndWriting()
+    EndWriting(inst)
     widget:Close()
 end
 
@@ -182,14 +169,13 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Pages
     -------------------------------------------------------------------------------
     self.page = 0
-    self.title = nil
     self.pages = {}
     self.marks = {}
     local function OnPageUpdated(page)
-        local res = page == 0 and self.title or self.pages[page]
+        local res = self.pages[page]
         if not res then
             if page == 0 then
-                res = GetTitle(writeable) or ""
+                res = GetPage(writeable, 0) or ""
                 self.edit_text:SetHAlign(ANCHOR_MIDDLE)
             else
                 res = GetPage(writeable, page) or ""
@@ -200,12 +186,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end
     local function MarkPage(page)
         local text = self.edit_text:GetString() or ""
-        if page == 0 then
-            self.title = text
-        else
-            self.pages[page] = text
-            self.marks[page] = true
-        end
+        self.pages[page] = text
+        self.marks[page] = true
     end
     local function MarkCurrent()
         MarkPage(self.page)

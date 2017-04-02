@@ -2,11 +2,6 @@
 --Server interface
 --------------------------------------------------------------------------
 
-local function OnTitleChanged(parent, data)
-    local notebook = parent.components.notebook
-    notebook.title = data.newtitle
-end
-
 local function OnPagesChanged(parent, data)
     local notebook = parent.components.notebook
     for page, text in pairs(data.newpages) do
@@ -36,17 +31,6 @@ local function OnEntityReplicated(inst)
     end
 end
 
-local function OnTitleDirty(inst)
-    if inst._parent ~= nil then
-        local title = inst.title:value()
-        local data =
-        {
-            newtitle = title,
-        }
-        inst._parent:PushEvent("titlechanged", data)
-    end
-end
-
 local function OnPagesDirty(inst)
     if inst._parent ~= nil then
         local pages = inst.pages:value()
@@ -61,10 +45,6 @@ end
 local function SendRPC(namespace, name, ...)
     local id_table = { namespace = namespace, id = MOD_RPC[namespace][name].id }
     SendModRPCToServer(id_table, ...)
-end
-
-local function SetTitle(inst, doer, title)
-    SendRPC("NOTEBOOK", "SetTitle", inst._parent, doer, title)
 end
 
 local function SetPages(inst, doer, pages)
@@ -82,11 +62,9 @@ local function RegisterNetListeners(inst)
     if TheWorld.ismastersim then
         -- server
         inst._parent = inst.entity:GetParent()
-        inst:ListenForEvent("titlechanged", OnTitleChanged, inst._parent)
         inst:ListenForEvent("pageschanged", OnPagesChanged, inst._parent)
     else
         -- client
-        inst:ListenForEvent("titledirty", OnTitleDirty)
         inst:ListenForEvent("pagesdirty", OnPagesDirty)
     end
     -- common
@@ -102,7 +80,6 @@ local function fn()
     inst:AddTag("CLASSIFIED")
     
     --Net variables
-    inst.title = net_string(inst.GUID, "notebook.title", "titledirty")
     inst.pages = net_entity(inst.GUID, "notebook.pages", "pagesdirty")
     
     --Delay net listeners until after initial values are deserialized
@@ -113,7 +90,6 @@ local function fn()
     if not TheWorld.ismastersim then
         --Client interface
         inst.OnEntityReplicated = OnEntityReplicated
-        inst.SetTitle = SetTitle
         inst.SetPages = SetPages
 
         return inst

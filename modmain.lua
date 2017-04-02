@@ -143,20 +143,6 @@ NotebookMod.RPC =
 {
     NOTEBOOK =
     {
-        SetTitle =
-        {
-            fn = function(book, doer, title)
-                if not (checkentity(book)
-                    and optstring(title))
-                then
-                    printinvalid("SetTitle", doer)
-                    return
-                end
-                if book.components.notebook then
-                    book:SetTitle(doer, title)
-                end
-            end,
-        },
         SetPages =
         {
             fn = function(book, doer, pages)

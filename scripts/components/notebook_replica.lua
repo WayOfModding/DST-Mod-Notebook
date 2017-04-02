@@ -41,10 +41,6 @@ local function BeginWriting(inst, self)
     self:BeginWriting(ThePlayer)
 end
 
-function Notebook:GetTitle()
-    return self.classified.title:value()
-end
-
 function Notebook:GetPage(page)
     return self.classified.pages:value()[page]
 end
