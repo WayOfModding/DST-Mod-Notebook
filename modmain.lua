@@ -148,7 +148,9 @@ NotebookMod.RPC =
         SetPages =
         {
             fn = function(book, doer, pages)
-                if not (checkentity(book))
+                if not (checkentity(book)
+                    and checkentity(doer)
+                    and checkentity(pages))
                 then
                     printinvalid("SetPages", doer)
                     return
