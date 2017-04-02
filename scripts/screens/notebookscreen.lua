@@ -68,7 +68,7 @@ local function oncancel(inst, doer, widget)
         return
     end
     
-    EndWriting()
+    EndWriting(inst)
 
     if widget.config.cancelbtn.cb ~= nil then
         widget.config.cancelbtn.cb(inst, doer, widget)
