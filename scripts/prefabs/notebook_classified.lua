@@ -81,6 +81,10 @@ local function fn()
     
     --Net variables
     inst.pages = net_entity(inst.GUID, "notebook.pages", "pagesdirty")
+    -- Initialize net variables
+    local pages = {}
+    inst.pages:set_local(pages)
+    inst.pages:set(pages)
     
     --Delay net listeners until after initial values are deserialized
     inst:DoTaskInTime(0, RegisterNetListeners)
