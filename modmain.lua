@@ -46,10 +46,9 @@ AddPrefabPostInit("book_notebook", function(inst)
         inst:AddComponent("nbreader")
     end
 end)
+
 AddPlayerPostInit(function(inst)
-    if GLOBAL.TheWorld.ismastersim then
-        inst:AddComponent("nbreader")
-    end
+    inst:AddComponent("nbreader")
 end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
@@ -59,9 +58,6 @@ local action_nbread = AddAction("NBREAD", "Read", function(act)
     end
     if act.doer == nil then
         return false, "Action.Read: 'act.doer' is nil"
-    end
-    if targ.components.notebook == nil then
-        return false, "Action.Read: 'targ.components.notebook' is nil"
     end
     if act.doer.components.nbreader == nil then
         return false, "Action.Read: 'act.doer.components.nbreader' is nil"

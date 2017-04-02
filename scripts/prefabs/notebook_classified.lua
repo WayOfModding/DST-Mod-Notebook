@@ -48,6 +48,7 @@ local function SendRPC(namespace, name, ...)
 end
 
 local function SetPages(inst, doer, pages)
+    print("KK-TEST> SendRPC:", inst._parent, doer, pages)
     SendRPC("NOTEBOOK", "SetPages", inst._parent, doer, pages)
 end
 
