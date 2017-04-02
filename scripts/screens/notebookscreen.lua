@@ -201,7 +201,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     local function MarkPage(page)
         local text = self.edit_text:GetString() or ""
         if page == 0 then
-            self.title = title
+            self.title = text
         else
             self.pages[page] = text
             self.marks[page] = true

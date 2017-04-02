@@ -102,8 +102,8 @@ local function fn()
     inst:AddTag("CLASSIFIED")
     
     --Net variables
-    self.title = net_string(self.GUID, "notebook.title", "titledirty")
-    self.pages = net_entity(self.GUID, "notebook.pages", "pagesdirty")
+    inst.title = net_string(inst.GUID, "notebook.title", "titledirty")
+    inst.pages = net_entity(inst.GUID, "notebook.pages", "pagesdirty")
     
     --Delay net listeners until after initial values are deserialized
     inst:DoTaskInTime(0, RegisterNetListeners)
