@@ -144,6 +144,13 @@ AddStategraphState("wilson_client", state_notebook)
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 
+local function printinvalid(rpcname, player)
+    print(string.format("Invalid %s RPC from (%s) %s", rpcname, player.userid or "", player.name or ""))
+
+    --This event is for MODs that want to handle players sending invalid rpcs
+    TheWorld:PushEvent("invalidrpc", { player = player, rpcname = rpcname })
+end
+
 NotebookMod.RPC =
 {
     NOTEBOOK =
@@ -176,6 +183,8 @@ NotebookMod.RPC =
                     pages = json.decode(pages)
                     assert(type(pages) == "table", "Error occurred while decoding json string!")
                     book.components.notebook:SetPages(player, pages)
+                else
+                    print("KK-TEST> 'book.components.notebook' not found!")
                 end
             end,
         },

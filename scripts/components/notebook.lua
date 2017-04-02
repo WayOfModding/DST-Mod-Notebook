@@ -78,6 +78,8 @@ function Notebook:SetPages(doer, pages)
         for page, text in pairs(pages) do
             self.pages[page] = text
         end
+    else
+        print("KK-TEST> Fail to execute Notebook:SetPages\n", doer, pages)
     end
 end
 
