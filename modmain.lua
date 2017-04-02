@@ -147,13 +147,14 @@ NotebookMod.RPC =
     {
         SetPages =
         {
-            fn = function(book, doer, pages)
+            fn = function(player, book, doer, pages)
                 print("KK-TEST> RPC handler 'SetPages' is invoked!")
+                print("KK-TEST> player==doer = "..tostring(player==doer))
                 if not (checkentity(book)
                     and checkentity(doer)
                     and checkentity(pages))
                 then
-                    printinvalid("SetPages", doer)
+                    printinvalid("SetPages", player)
                     return
                 end
                 if book.components.notebook then

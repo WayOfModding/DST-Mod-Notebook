@@ -85,9 +85,9 @@ local function fn()
     --Net variables
     inst.pages = net_entity(inst.GUID, "notebook.pages", "pagesdirty")
     -- Initialize net variables
-    local pages = {}
-    inst.pages:set_local(pages)
-    inst.pages:set(pages)
+    inst.pages:set_local({})
+    local testvar = inst.pages:value()
+    print("Prefab 'notebook_classified' instance (".. tostring(inst.GUID) .. ") is initialized." .. tostring(testvar))
     
     --Delay net listeners until after initial values are deserialized
     inst:DoTaskInTime(0, RegisterNetListeners)
