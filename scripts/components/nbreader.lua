@@ -10,6 +10,8 @@ end
 
 function NotebookReader:Read(book)
     if not book then return end
+    
+    local notebook = nil
     if TheWorld.ismastersim then
         notebook = book.components.notebook
     else

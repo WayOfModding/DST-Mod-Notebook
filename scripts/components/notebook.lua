@@ -76,7 +76,7 @@ end
 
 function Notebook:SetPages(doer, pages)
     if doer ~= nil and self.writer == doer then
-        for page, text in pairs(pages)
+        for page, text in pairs(pages) do
             self.pages[page] = text
         end
     end

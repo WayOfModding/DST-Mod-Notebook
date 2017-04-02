@@ -221,14 +221,14 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         if newpage < 0 then newpage = 0 end
         if newpage < oldpage then
             UpdatePage(newpage)
-        end]
+        end
     end
     local function NextPage()
         local oldpage = self.page
         local newpage = oldpage + 1
         if newpage > oldpage then
             UpdatePage(newpage)
-        end]
+        end
     end
     
     -------------------------------------------------------------------------------
