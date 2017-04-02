@@ -9,14 +9,23 @@ function NotebookReader:OnRemoveFromEntity()
 end
 
 function NotebookReader:Read(book)
-    if not book then return end
+    if book == nil then
+        return false, "NotebookReader:Read: 'book' is nil"
+    end
     
     local notebook = nil
     if TheWorld.ismastersim then
         notebook = book.components.notebook
+        if notebook == nil then
+            return false, "NotebookReader:Read: 'notebook' is nil(TheWorld.ismastersim == true)"
+        end
     else
         notebook = book.replica.notebook
+        if notebook == nil then
+            return false, "NotebookReader:Read: 'notebook' is nil(TheWorld.ismastersim == false)"
+        end
     end
+    
     return notebook:BeginWriting(self.inst)
 end
 

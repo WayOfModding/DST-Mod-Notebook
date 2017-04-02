@@ -72,9 +72,14 @@ function Notebook:BeginWriting(doer)
         and doer == ThePlayer then
 
         if doer.HUD == nil then
-            -- abort
-        else -- if not busy...
-            makescreen(self.inst, doer)
+            return false, "Notebook(replica):BeginWriting: 'doer.HUD' is nil"
+        else
+            local screen = makescreen(self.inst, doer)
+            if screen == nil then
+                return false, "Notebook(replica):BeginWriting: Fail to make notebook screen!"
+            else
+                return true
+            end
         end
     end
 end

@@ -54,13 +54,19 @@ end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
     local targ = act.target or act.invobject
-    if targ ~= nil
-        and act.doer ~= nil
-        and targ.components.notebook ~= nil
-        and act.doer.components.nbreader ~= nil
-    then
-        return act.doer.components.nbreader:Read(targ)
+    if targ == nil then
+        return false, "Action.Read: 'targ' is nil"
     end
+    if act.doer == nil then
+        return false, "Action.Read: 'act.doer' is nil"
+    end
+    if targ.components.notebook == nil then
+        return false, "Action.Read: 'targ.components.notebook' is nil"
+    end
+    if act.doer.components.nbreader == nil then
+        return false, "Action.Read: 'act.doer.components.nbreader' is nil"
+    end
+    return act.doer.components.nbreader:Read(targ)
 end)
 action_nbread.mount_valid = true
 

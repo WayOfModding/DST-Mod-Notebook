@@ -37,8 +37,10 @@ end
 function Notebook:OnLoad(data)
     self.pages      = data.pages
     -- Notify client
-    self.inst.replica.classified.pages:set_local(self.pages)
-    self.inst.replica.classified.pages:set(self.pages)
+    if self.inst.replica.notebook.classified then
+        self.inst.replica.notebook.classified.pages:set_local(self.pages)
+        self.inst.replica.notebook.classified.pages:set(self.pages)
+    end
 end
 
 function Notebook:BeginWriting(doer)
@@ -52,9 +54,18 @@ function Notebook:BeginWriting(doer)
         self.inst:ListenForEvent("onremove", self.onclosepopups, doer)
         
         -- Make pop-up window
-        if doer.HUD ~= nil then
-            makescreen(self.inst, doer)
+        if doer.HUD == nil then
+            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
+        else
+            local screen = makescreen(self.inst, doer)
+            if screen == nil then
+                return false, "Notebook:BeginWriting: Fail to make notebook screen!"
+            else
+                return true
+            end
         end
+    else
+        return false, "Notebook:BeginWriting: Notebook is already being editing!"
     end
 end
 
