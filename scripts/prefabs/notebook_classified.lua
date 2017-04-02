@@ -50,8 +50,11 @@ end
 local function SetPages(inst, doer, pages)
     local book = inst._parent
     assert(book ~= nil and book:IsValid() and book.prefab and book.prefab == "book_notebook", "Invalid inst parent!")
-    print("KK-TEST> SendRPC:", book, doer, pages)
-    SendRPC("NOTEBOOK", "SetPages", book, doer, pages)
+    print("KK-TEST> SendRPC:", doer, book, pages)
+    local json = require("json")
+    pages = json.encode(pages)
+    assert(type(pages) == "string", "Error occurred while encoding json string!")
+    SendRPC("NOTEBOOK", "SetPages", book, pages)
 end
 
 --------------------------------------------------------------------------
@@ -85,9 +88,8 @@ local function fn()
     --Net variables
     inst.pages = net_entity(inst.GUID, "notebook.pages", "pagesdirty")
     -- Initialize net variables
-    inst.pages:set_local({})
-    local testvar = inst.pages:value()
-    print("Prefab 'notebook_classified' instance (".. tostring(inst.GUID) .. ") is initialized." .. tostring(testvar))
+    inst.pages:set_local({}) -- FIXME useless?
+    print("Prefab 'notebook_classified' instance (".. tostring(inst.GUID) .. ") is initialized.")
     
     --Delay net listeners until after initial values are deserialized
     inst:DoTaskInTime(0, RegisterNetListeners)

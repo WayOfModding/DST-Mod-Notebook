@@ -49,6 +49,7 @@ local function onaccept(inst, doer, widget)
         widget.config.acceptbtn.cb(inst, doer, widget)
     end
 
+    widget.edit_text:SetEditing(false)
     EndWriting(inst)
     widget:Close()
 end
@@ -172,15 +173,11 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.pages = {}
     self.marks = {}
     local function OnPageUpdated(page)
-        local res = self.pages[page]
-        if not res then
-            if page == 0 then
-                res = GetPage(writeable, 0) or ""
-                self.edit_text:SetHAlign(ANCHOR_MIDDLE)
-            else
-                res = GetPage(writeable, page) or ""
-                self.edit_text:SetHAlign(ANCHOR_LEFT)
-            end
+        local res = self.pages[page] or GetPage(writeable, page) or ""
+        if page == 0 then
+            self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+        else
+            self.edit_text:SetHAlign(ANCHOR_LEFT)
         end
         self.edit_text:SetString(res)
     end
@@ -195,7 +192,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     local function UpdatePage(page)
         self.page = page
         OnPageUpdated(page)
-        self.edit_text:SetEditing(true)
     end
     local function LastPage()
         local oldpage = self.page
@@ -204,6 +200,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         if newpage < oldpage then
             UpdatePage(newpage)
         end
+        self.edit_text:SetEditing(true)
     end
     local function NextPage()
         local oldpage = self.page
@@ -211,6 +208,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         if newpage > oldpage then
             UpdatePage(newpage)
         end
+        self.edit_text:SetEditing(true)
     end
     
     -------------------------------------------------------------------------------

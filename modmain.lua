@@ -12,6 +12,9 @@ local EventHandler = GLOBAL.EventHandler
 local ActionHandler = GLOBAL.ActionHandler
 local SpawnPrefab = GLOBAL.SpawnPrefab
 local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
+local checkentity = GLOBAL.checkentity
+local checkstring = GLOBAL.checkstring
+local assert = GLOBAL.assert
 
 local NotebookMod = {}
 
@@ -147,18 +150,32 @@ NotebookMod.RPC =
     {
         SetPages =
         {
-            fn = function(player, book, doer, pages)
+            fn = function(player, book, pages)
                 print("KK-TEST> RPC handler 'SetPages' is invoked!")
-                print("KK-TEST> player==doer = "..tostring(player==doer))
+                --[[
+                All available validation functions in networkclientrpc.lua
+                function checkbool(val)
+                function checknumber(val)
+                function checkuint(val)
+                function checkstring(val)
+                function checkentity(val)
+                optbool = checkbool
+                function optnumber(val)
+                function optuint(val)
+                function optstring(val)
+                function optentity(val)
+                --]]
                 if not (checkentity(book)
-                    and checkentity(doer)
-                    and checkentity(pages))
+                    and checkstring(pages))
                 then
                     printinvalid("SetPages", player)
                     return
                 end
                 if book.components.notebook then
-                    book.components.notebook:SetPages(doer, pages)
+                    local json = require("json")
+                    pages = json.decode(pages)
+                    assert(type(pages) == "table", "Error occurred while decoding json string!")
+                    book.components.notebook:SetPages(player, pages)
                 end
             end,
         },
