@@ -43,6 +43,14 @@ function Notebook:OnLoad(data)
     end
 end
 
+function Notebook:SetWriter(writer)
+    if self.writer == nil then
+        self.writer = writer
+    else
+        print("KK-TEST> self.writer = ", self.writer)
+    end
+end
+
 function Notebook:BeginWriting(doer)
     if self.writer == nil then
         -- Notify component update
@@ -79,7 +87,8 @@ function Notebook:SetPages(doer, pages)
             self.pages[page] = text
         end
     else
-        print("KK-TEST> Fail to execute Notebook:SetPages\n", doer, pages)
+        print(string.format("KK-TEST> Fail to execute Notebook:SetPages\n\tdoer=%s\n\tpages=%s\n\tself.writer=%s\n",
+            doer, pages, self.writer))
     end
 end
 

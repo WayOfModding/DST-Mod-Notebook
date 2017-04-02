@@ -88,6 +88,7 @@ function Notebook:BeginWriting(doer)
             return false, "Notebook(replica):BeginWriting: 'doer.HUD' is nil"
         else
             local screen = makescreen(self.inst, doer)
+            self.classified:BeginWriting()
             if screen == nil then
                 return false, "Notebook(replica):BeginWriting: Fail to make notebook screen!"
             else
@@ -98,8 +99,10 @@ function Notebook:BeginWriting(doer)
 end
 
 function Notebook:EndWriting()
-    if self.inst.components.notebook ~= nil then
-        self.inst.components.notebook:EndWriting()
+    if self.classified ~= nil then
+        self.classified:EndWriting()
+    else
+        print("KK-TEST> 'self.classified' is nil!")
     end
 end
 

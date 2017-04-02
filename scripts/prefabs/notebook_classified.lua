@@ -44,17 +44,29 @@ end
 
 local function SendRPC(namespace, name, ...)
     local id_table = { namespace = namespace, id = MOD_RPC[namespace][name].id }
+    print("KK-TEST> SendRPC:", ...)
     SendModRPCToServer(id_table, ...)
 end
 
 local function SetPages(inst, doer, pages)
     local book = inst._parent
     assert(book ~= nil and book:IsValid() and book.prefab and book.prefab == "book_notebook", "Invalid inst parent!")
-    print("KK-TEST> SendRPC:", doer, book, pages)
     local json = require("json")
     pages = json.encode(pages)
     assert(type(pages) == "string", "Error occurred while encoding json string!")
     SendRPC("NOTEBOOK", "SetPages", book, pages)
+end
+
+local function BeginWriting(inst)
+    local book = inst._parent
+    assert(book ~= nil and book:IsValid() and book.prefab and book.prefab == "book_notebook", "Invalid inst parent!")
+    SendRPC("NOTEBOOK", "BeginWriting", book)
+end
+
+local function EndWriting(inst)
+    local book = inst._parent
+    assert(book ~= nil and book:IsValid() and book.prefab and book.prefab == "book_notebook", "Invalid inst parent!")
+    SendRPC("NOTEBOOK", "EndWriting", book)
 end
 
 --------------------------------------------------------------------------
@@ -100,6 +112,8 @@ local function fn()
         --Client interface
         inst.OnEntityReplicated = OnEntityReplicated
         inst.SetPages = SetPages
+        inst.BeginWriting = BeginWriting
+        inst.EndWriting = EndWriting
 
         return inst
     end

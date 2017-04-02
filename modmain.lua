@@ -151,48 +151,65 @@ local function printinvalid(rpcname, player)
     TheWorld:PushEvent("invalidrpc", { player = player, rpcname = rpcname })
 end
 
-NotebookMod.RPC =
+--[[
+All available validation functions in networkclientrpc.lua
+function checkbool(val)
+function checknumber(val)
+function checkuint(val)
+function checkstring(val)
+function checkentity(val)
+optbool = checkbool
+function optnumber(val)
+function optuint(val)
+function optstring(val)
+function optentity(val)
+--]]
+local RPC_HANDLERS =
 {
     NOTEBOOK =
     {
-        SetPages =
-        {
-            fn = function(player, book, pages)
-                print("KK-TEST> RPC handler 'SetPages' is invoked!")
-                --[[
-                All available validation functions in networkclientrpc.lua
-                function checkbool(val)
-                function checknumber(val)
-                function checkuint(val)
-                function checkstring(val)
-                function checkentity(val)
-                optbool = checkbool
-                function optnumber(val)
-                function optuint(val)
-                function optstring(val)
-                function optentity(val)
-                --]]
-                if not (checkentity(book)
-                    and checkstring(pages))
-                then
-                    printinvalid("SetPages", player)
-                    return
-                end
-                if book.components.notebook then
-                    local json = require("json")
-                    pages = json.decode(pages)
-                    assert(type(pages) == "table", "Error occurred while decoding json string!")
-                    book.components.notebook:SetPages(player, pages)
-                else
-                    print("KK-TEST> 'book.components.notebook' not found!")
-                end
-            end,
-        },
+        SetPages = function(player, book, pages)
+            print("KK-TEST> RPC handler 'SetPages' is invoked.")
+            if not (checkentity(book)
+                and checkstring(pages))
+            then
+                printinvalid("SetPages", player)
+                return
+            end
+            if book.components.notebook then
+                local json = require("json")
+                pages = json.decode(pages)
+                assert(type(pages) == "table", "Error occurred while decoding json string!")
+                book.components.notebook:SetPages(player, pages)
+            else
+                print("KK-TEST> 'book.components.notebook' not found!")
+            end
+        end,
+        BeginWriting = function(player, book)
+            print("KK-TEST> RPC handler 'BeginWriting' is invoked.")
+            if book.components.notebook then
+                book.components.notebook:SetWriter(player)
+            else
+                print("KK-TEST> 'book.components.notebook' not found!")
+            end
+        end,
+        EndWriting = function(player, book)
+            print("KK-TEST> RPC handler 'EndWriting' is invoked.")
+            if not (checkentity(book)) then
+                printinvalid("EndWriting", player)
+                return
+            end
+            if book.components.notebook then
+                book.components.notebook:EndWriting()
+            else
+                print("KK-TEST> 'book.components.notebook' not found!")
+            end
+        end,
     },
 }
 
-for namespace, nstable in pairs(NotebookMod.RPC) do
-    for name, attr in pairs(nstable) do
-        AddModRPCHandler(namespace, name, attr.fn)
+for namespace, nstable in pairs(RPC_HANDLERS) do
+    for name, func in pairs(nstable) do
+        AddModRPCHandler(namespace, name, func)
     end
 end
