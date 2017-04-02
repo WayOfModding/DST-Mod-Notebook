@@ -148,6 +148,7 @@ NotebookMod.RPC =
         SetPages =
         {
             fn = function(book, doer, pages)
+                print("KK-TEST> RPC handler 'SetPages' is invoked!")
                 if not (checkentity(book)
                     and checkentity(doer)
                     and checkentity(pages))
@@ -156,7 +157,7 @@ NotebookMod.RPC =
                     return
                 end
                 if book.components.notebook then
-                    book:SetPages(doer, pages)
+                    book.components.notebook:SetPages(doer, pages)
                 end
             end,
         },
