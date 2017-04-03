@@ -33,7 +33,12 @@ local Notebook = Class(function(self, inst)
     
     inst:AddTag("notebook")
     --inst:DoTaskInTime(0, RegisterNetListeners)
-end)
+end,
+{
+    pages = function(self, newpages)
+        print("KK-TEST> Setter of 'pages' is invoked.")
+    end
+})
 
 ------------------------------------------------------------
 -- Common APIs
@@ -43,7 +48,7 @@ function Notebook:OnSave()
 end
 
 function Notebook:OnLoad(data, newents)
-    print("KK-TEST> Function Notebook:OnLoad is invoked on " .. (TheWorld.ismastersim and "server-side" or "client-side"))
+    print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked on " .. (TheWorld.ismastersim and "server-side" or "client-side"))
     self.pages = data.pages
 end
 

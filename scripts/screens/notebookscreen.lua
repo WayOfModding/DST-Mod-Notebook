@@ -160,7 +160,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Pages
     -------------------------------------------------------------------------------
     self.page = 0
-    self.pages = {}
+    self.pages = writeable.components.notebook.pages or {}
     self.marks = {}
     local function OnPageUpdated(page)
         local res = self.pages[page] or GetPage(writeable, page) or ""
