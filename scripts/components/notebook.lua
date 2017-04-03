@@ -23,6 +23,15 @@ local Notebook = Class(function(self, inst)
     
     inst:AddTag("notebook")
     --inst:DoTaskInTime(0, RegisterNetListeners)
+    
+    inst.components.inspectable.getspecialdescription = function(inst, reader)
+        local title = inst.replica.notebook:GetTitle()
+        if title and title ~= "" then
+            return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
+        else
+            return nil
+        end
+    end
 end,
 nil,
 {

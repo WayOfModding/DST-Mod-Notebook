@@ -28,15 +28,6 @@ local Notebook = Class(function(self, inst)
     
     -- @see netvars.lua
     self.pages = net_entity(inst.GUID, "notebook.pages", "pagedirty")
-    
-    inst.components.inspectable.getspecialdescription = function(inst, reader)
-        local title = self:GetTitle()
-        if title and title ~= "" then
-            return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
-        else
-            return nil
-        end
-    end
 end)
 
 function Notebook:GetDebugString()
