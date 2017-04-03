@@ -35,16 +35,6 @@ local function fn(Sim)
     end
     
     inst:AddComponent("inspectable")
-    inst.components.inspectable.getspecialdescription = function(inst, reader)
-        local notebook = inst.components.notebook
-        
-        if notebook then
-            local title = notebook.pages[0]
-            if title and title ~= "" then
-                return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
-            end
-        end
-    end
     
     -- Writeable book --
     inst:AddComponent("notebook")

@@ -153,7 +153,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -------------------------------------------------------------------------------
     self.page = 0
     -- Load all pages into this widget
-    self.pages = writeable.replica.notebook and writeable.replica.notebook:GetPages() or {}
+    self.pages = writeable.replica.notebook:GetPages()
     self.marks = {}
     local function GetPage(page)
         return self.pages[page] or ""

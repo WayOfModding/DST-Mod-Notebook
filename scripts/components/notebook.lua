@@ -84,6 +84,7 @@ function Notebook:SetPages(pages)
         return false, "Nil parameter 'pages'"
     end
     if type(pages) == "string" then
+        print("KK-TEST> Decoding RPC string: \"" .. pages .. "\"")
         pages = json.decode(pages)
         assert(type(pages) == "table", "Error occurred while decoding json string!")
     elseif type(pages) ~= "table" then

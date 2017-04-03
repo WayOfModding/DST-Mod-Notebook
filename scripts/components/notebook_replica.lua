@@ -28,6 +28,15 @@ local Notebook = Class(function(self, inst)
     
     -- @see netvars.lua
     self.pages = net_entity(inst.GUID, "notebook.pages", "pagedirty")
+    
+    inst.components.inspectable.getspecialdescription = function(inst, reader)
+        local title = self:GetTitle()
+        if title and title ~= "" then
+            return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
+        else
+            return nil
+        end
+    end
 end)
 
 function Notebook:GetDebugString()
@@ -50,13 +59,27 @@ end
 
 function Notebook:GetPages()
     print("KK-TEST> Function Notebook(replica):SetPages() is invoked.")
+    local res = nil
     if self.inst.components.notebook ~= nil then
-        print("KK-TEST> self.inst.components.notebook is found.")
-        return self.inst.components.notebook.pages or {}
+        --print("KK-TEST> self.inst.components.notebook is found.")
+        res = self.inst.components.notebook.pages
     else
-        print("KK-TEST> self.inst.components.notebook is NOT found.")
-        return self.pages:value() or {}
+        --print("KK-TEST> self.inst.components.notebook is NOT found.")
+        res = self.pages:value()
     end
+    if res == nil then
+        print("KK-TEST> An empty book is retrieved!")
+        res = {}
+    end
+    return res
+end
+
+function Notebook:GetPage(page)
+    return self:GetPages()[page] or ""
+end
+
+function Notebook:GetTitle()
+    return self:GetPage(0)
 end
 
 
