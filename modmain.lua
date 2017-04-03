@@ -49,17 +49,30 @@ AddPlayerPostInit(function(inst)
 end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
+    print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
     if targ == nil then
-        return false, "Action.Read: 'targ' is nil"
+        local reason = "Action.Read: 'targ' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
     end
     if act.doer == nil then
-        return false, "Action.Read: 'act.doer' is nil"
+        local reason = "Action.Read: 'act.doer' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
     end
     if act.doer.components.nbreader == nil then
-        return false, "Action.Read: 'act.doer.components.nbreader' is nil"
+        local reason = "Action.Read: 'act.doer.components.nbreader' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
     end
-    return act.doer.components.nbreader:Read(targ)
+    local result, reason = act.doer.components.nbreader:Read(targ)
+    if result then
+        return true
+    else
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
+    end
 end)
 action_nbread.mount_valid = true
 

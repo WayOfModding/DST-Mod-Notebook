@@ -29,10 +29,6 @@ local function fn(Sim)
     inst.AnimState:PlayAnimation("idle")
     
     inst.entity:SetPristine()
-    
-    -- Writeable book --
-    inst:AddComponent("notebook")
-    --------------------
 
     if not TheWorld.ismastersim then
         return inst
@@ -49,6 +45,10 @@ local function fn(Sim)
             end
         end
     end
+    
+    -- Writeable book --
+    inst:AddComponent("notebook")
+    --------------------
 
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
