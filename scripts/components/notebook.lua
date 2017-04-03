@@ -43,12 +43,17 @@ nil,
     pages = function(self, newpages, oldpages)
         print("KK-TEST> Setter of 'pages' is invoked.")
         if self.inst.replica.notebook then
+            print("KK-TEST> Field 'self.inst.replica.notebook' is found!")
             --self.inst.replica.notebook:SetPages(newpages)
             self.inst.replica.notebook.pages:set(newpages)
             self.inst.replica.notebook.pages:set_local(newpages)
         else
             print("KK-TEST> Field 'self.inst.replica.notebook' not found!")
         end
+        print("KK-TEST> START")
+        print(dumptable(newpages))
+        print(dumptable(oldpages))
+        print("KK-TEST> END")
     end
 })
 
