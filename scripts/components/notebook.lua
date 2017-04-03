@@ -40,7 +40,7 @@ nil,
     --  * self.pages = {}          @ <constructor>
     --  * self.pages = data.pages  @ OnLoad
     --  * self.pages = {}          @ Clear
-    pages = function(self, newpages)
+    pages = function(self, newpages, oldpages)
         print("KK-TEST> Setter of 'pages' is invoked.")
         if self.inst.replica.notebook then
             --self.inst.replica.notebook:SetPages(newpages)
