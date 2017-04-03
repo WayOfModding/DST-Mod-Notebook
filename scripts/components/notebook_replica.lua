@@ -1,3 +1,4 @@
+local makescreen = require("screens/notebookscreen")
 local json = require("json")
 
 local function SendRPC(namespace, name, ...)
