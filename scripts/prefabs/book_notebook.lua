@@ -29,19 +29,29 @@ local function fn(Sim)
     inst.AnimState:PlayAnimation("idle")
     
     inst.entity:SetPristine()
+    
+    -- Writeable book --
+    inst:AddComponent("notebook")
+    --------------------
 
     if not TheWorld.ismastersim then
         return inst
     end
     
     inst:AddComponent("inspectable")
+    inst.components.inspectable.getspecialdescription = function(inst, reader)
+        local notebook = inst.components.notebook
+        
+        if notebook then
+            local title = notebook.pages[0]
+            if title and title ~= "" then
+                return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
+            end
+        end
+    end
 
     inst:AddComponent("inventoryitem")
     inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
-    
-    -- Writeable book --
-    inst:AddComponent("notebook")
-    --------------------
     
     -- Books are flammable
     inst:AddComponent("fuel")

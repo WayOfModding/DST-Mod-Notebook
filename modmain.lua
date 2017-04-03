@@ -4,6 +4,7 @@ local Ingredient = GLOBAL.Ingredient
 local RECIPETABS = GLOBAL.RECIPETABS
 local STRINGS = GLOBAL.STRINGS
 local TECH = GLOBAL.TECH
+local TheWorld = GLOBAL.TheWorld
 local ACTIONS = GLOBAL.ACTIONS
 local State = GLOBAL.State
 local FRAMES = GLOBAL.FRAMES
@@ -21,7 +22,6 @@ local NotebookMod = {}
 PrefabFiles =
 {
     "book_notebook",
-    "notebook_classified",
 }
 
 -- Strings
@@ -44,12 +44,6 @@ Requirement:
 --]]
 AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
 
-AddPrefabPostInit("book_notebook", function(inst)
-    if GLOBAL.TheWorld.ismastersim then
-        inst:AddComponent("nbreader")
-    end
-end)
-
 AddPlayerPostInit(function(inst)
     inst:AddComponent("nbreader")
 end)
@@ -69,13 +63,17 @@ local action_nbread = AddAction("NBREAD", "Read", function(act)
 end)
 action_nbread.mount_valid = true
 
-AddComponentAction("INVENTORY", "nbreader", function(inst, doer, actions)
-    if inst:HasTag("nbreader") then
+--[[
+All possible component action categories: SCENE, USEITEM, POINT, EQUIPPED, INVENTORY, ISVALID
+--]]
+AddComponentAction("INVENTORY", "notebook", function(inst, doer, actions)
+    if inst:HasTag("notebook") then
         table.insert(actions, ACTIONS.NBREAD)
     end
 end)
 
-AddReplicableComponent("notebook")
+-- This loads notebook_replica into book_notebook
+--AddReplicableComponent("notebook")
 
 local state_notebook = State{
     name = "notebook",
@@ -168,41 +166,21 @@ local RPC_HANDLERS =
 {
     NOTEBOOK =
     {
+        -- Parameters:
+        --  * book:     instance of prefab 'book_notebook'
+        --  * pages:    string of pages table serialized by json
         SetPages = function(player, book, pages)
             print("KK-TEST> RPC handler 'SetPages' is invoked.")
             if not (checkentity(book)
                 and checkstring(pages))
             then
                 printinvalid("SetPages", player)
-                return
+                return false, "Invalid RPC"
             end
             if book.components.notebook then
-                local json = require("json")
-                pages = json.decode(pages)
-                assert(type(pages) == "table", "Error occurred while decoding json string!")
-                book.components.notebook:SetPages(player, pages)
+                return book.components.notebook:SetPages(pages)
             else
-                print("KK-TEST> 'book.components.notebook' not found!")
-            end
-        end,
-        BeginWriting = function(player, book)
-            print("KK-TEST> RPC handler 'BeginWriting' is invoked.")
-            if book.components.notebook then
-                book.components.notebook:SetWriter(player)
-            else
-                print("KK-TEST> 'book.components.notebook' not found!")
-            end
-        end,
-        EndWriting = function(player, book)
-            print("KK-TEST> RPC handler 'EndWriting' is invoked.")
-            if not (checkentity(book)) then
-                printinvalid("EndWriting", player)
-                return
-            end
-            if book.components.notebook then
-                book.components.notebook:EndWriting()
-            else
-                print("KK-TEST> 'book.components.notebook' not found!")
+                return false, "'book.components.notebook' not found!"
             end
         end,
     },

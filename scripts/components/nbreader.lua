@@ -12,21 +12,12 @@ function NotebookReader:Read(book)
     if book == nil then
         return false, "NotebookReader:Read: 'book' is nil"
     end
-    
-    local notebook = nil
-    if TheWorld.ismastersim then
-        notebook = book.components.notebook
-        if notebook == nil then
-            return false, "NotebookReader:Read: 'notebook' is nil(TheWorld.ismastersim == true)"
-        end
-    else
-        notebook = book.replica.notebook
-        if notebook == nil then
-            return false, "NotebookReader:Read: 'notebook' is nil(TheWorld.ismastersim == false)"
-        end
+    if book.components.notebook == nil then
+        return false, "NotebookReader:Read: 'notebook' is nil"
     end
     
-    return notebook:BeginWriting(self.inst)
+    local player = self.inst
+    return book.components.notebook:BeginWriting(player)
 end
 
 return NotebookReader

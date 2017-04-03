@@ -7,35 +7,26 @@ local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
 
 local function GetPage(book, page)
-    if not TheWorld.ismastersim then
-        return book.replica.notebook:GetPage(page)
-    else
-        return book.components.notebook:GetPage(page)
-    end
+    return book.components.notebook:GetPage(page)
 end
 
 local function GetTitle(book)
     return GetPage(book, 0)
 end
 
-local function SetPages(book, doer, pages, marks)
+local function SetPages(book, pages, marks)
+    print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
+    
     -- Filter pages that ain't modified
     for page, mark in pairs(marks) do
         marks[page] = pages[page]
     end
-    if not TheWorld.ismastersim then
-        book.replica.notebook.classified:SetPages(doer, marks)
-    else
-        book.components.notebook:SetPages(doer, marks)
-    end
+    
+    book.components.notebook:SetPages(marks)
 end
 
-local function EndWriting(book)
-    if not TheWorld.ismastersim then
-        book.replica.notebook:EndWriting()
-    else
-        book.components.notebook:EndWriting()
-    end
+local function EndWriting(book, player)
+    book.components.notebook:EndWriting(player)
 end
 
 local function onaccept(inst, doer, widget)
@@ -43,14 +34,14 @@ local function onaccept(inst, doer, widget)
         return
     end
     
-    SetPages(inst, doer, widget.pages, widget.marks)
+    SetPages(inst, widget.pages, widget.marks)
 
     if widget.config.acceptbtn.cb ~= nil then
         widget.config.acceptbtn.cb(inst, doer, widget)
     end
 
     widget.edit_text:SetEditing(false)
-    EndWriting(inst)
+    EndWriting(inst, doer)
     widget:Close()
 end
 
@@ -59,8 +50,7 @@ local function onmiddle(inst, doer, widget)
         return
     end
     
-    widget:OverrideText("")
-    
+    widget.edit_text:SetString("")
     widget.edit_text:SetEditing(true)
 end
 
@@ -69,7 +59,7 @@ local function oncancel(inst, doer, widget)
         return
     end
     
-    EndWriting(inst)
+    EndWriting(inst, doer)
 
     if widget.config.cancelbtn.cb ~= nil then
         widget.config.cancelbtn.cb(inst, doer, widget)
@@ -217,21 +207,30 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.buttons = {}
     -- Cancel
     table.insert(self.buttons, { text = config.cancelbtn.text, cb = function()
+        print("KK-TEST> Button 'Cancel' is pressed.")
         oncancel(self.writeable, self.owner, self)
     end, control = config.cancelbtn.control })
     -- Clear
     table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
+        print("KK-TEST> Button 'Clear' is pressed.")
         MarkCurrent()
         onmiddle(self.writeable, self.owner, self)
     end, control = config.middlebtn.control })
     -- Accept
     table.insert(self.buttons, { text = config.acceptbtn.text, cb = function()
+        print("KK-TEST> Button 'Accept' is pressed.")
         onaccept(self.writeable, self.owner, self)
     end, control = config.acceptbtn.control })
     -- Last Page
-    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = LastPage, control = config.lastpagebtn.control })
+    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
+        print("KK-TEST> Button 'Last Page' is pressed.")
+        LastPage()
+    end, control = config.lastpagebtn.control })
     -- Next Page
-    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = NextPage, control = config.nextpagebtn.control })
+    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
+        print("KK-TEST> Button 'Next Page' is pressed.")
+        NextPage()
+    end, control = config.nextpagebtn.control })
 
     for i, v in ipairs(self.buttons) do
         if v.control ~= nil then
@@ -375,27 +374,26 @@ function WriteableWidget:OnControl(control, down)
     end
 end
 
-local function ShowWriteableWidget(playerhud, writeable)
-    if writeable == nil then
-        return
-    else
-        local screen = WriteableWidget(playerhud.owner, writeable)
-        playerhud:OpenScreenUnderPause(screen)
-        if TheFrontEnd:GetActiveScreen() == screen then
-            -- Have to set editing AFTER pushscreen finishes.
-            screen.edit_text:SetEditing(true)
-        end
-        return screen
+local function ShowWriteableWidget(player, playerhud, writeable)
+    assert(player == playerhud.owner, "KK-TEST> player != playerhud.owner")
+    local screen = WriteableWidget(playerhud.owner, writeable)
+    playerhud:OpenScreenUnderPause(screen)
+    if TheFrontEnd:GetActiveScreen() == screen then
+        -- Have to set editing AFTER pushscreen finishes.
+        screen.edit_text:SetEditing(true)
     end
+    screen.edit_text:SetString(GetTitle(writeable))
+    return screen
 end
 
 local function MakeWriteableWidget(inst, doer)
-    if inst.prefab == "book_notebook" then
+    if inst and inst.prefab == "book_notebook" then
         if doer and doer.HUD then
-            local screen = ShowWriteableWidget(doer.HUD, inst)
-            screen:OverrideText(GetTitle(inst))
-            return screen
+            return ShowWriteableWidget(doer, doer.HUD, inst)
         end
+        return false, "Invalid player"
+    else
+        return false, "Invalid prefab making NotebookScreen!"
     end
 end
 
