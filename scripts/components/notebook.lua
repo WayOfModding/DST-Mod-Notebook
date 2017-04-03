@@ -37,6 +37,7 @@ end,
 {
     pages = function(self, newpages)
         print("KK-TEST> Setter of 'pages' is invoked.")
+        self.inst.replica.notebook:SetPages(newpages)
     end
 })
 
@@ -48,8 +49,12 @@ function Notebook:OnSave()
 end
 
 function Notebook:OnLoad(data, newents)
-    print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked on " .. (TheWorld.ismastersim and "server-side" or "client-side"))
+    print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked.")
     self.pages = data.pages
+end
+
+function Notebook:GetDebugString()
+    return "Notebook" .. json.encode(self.pages)
 end
 
 function Notebook:GetPage(page)
@@ -92,7 +97,7 @@ if TheWorld.ismastersim then
 -- Server APIs
 ------------------------------------------------------------
     function Notebook:SetPages(pages)
-        print("KK-TEST> Function 'Notebook:SetPages' is invoked on server-side.")
+        print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
         if pages == nil then
             return false, "Nil parameter 'pages'"
         end
@@ -103,7 +108,6 @@ if TheWorld.ismastersim then
             return false, "Invalid parameter type 'pages': " .. type(pages)
         end
         setpages(self, pages)
-        self.inst:PushEvent("server.notebook.setpages", { newpages = pages })
         return true
     end
     
@@ -122,9 +126,8 @@ else
 -- Client APIs
 ------------------------------------------------------------
     function Notebook:SetPages(pages)
-        print("KK-TEST> Function 'Notebook:SetPages' is invoked on client-side.")
+        print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
         setpages(self, pages)
-        self.inst:PushEvent("client.notebook.setpages", { newpages = pages })
         pages = json.encode(pages)
         assert(type(pages) == "string", "Error occurred while encoding json string!")
         SendRPC("NOTEBOOK", "SetPages", self.inst, pages)

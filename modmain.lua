@@ -73,7 +73,7 @@ AddComponentAction("INVENTORY", "notebook", function(inst, doer, actions)
 end)
 
 -- This loads notebook_replica into book_notebook
---AddReplicableComponent("notebook")
+AddReplicableComponent("notebook")
 
 local state_notebook = State{
     name = "notebook",
