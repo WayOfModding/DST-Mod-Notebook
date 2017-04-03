@@ -19,7 +19,9 @@ local function setpages(self, pages)
         _pages[page] = text
         count = count + 1
     end
+    print("KK-TEST> 1st Dump(replica.notebook.pages) => " .. json.encode(self.pages:value()))
     self.pages:set_local(_pages)
+    print("KK-TEST> 2nd Dump(replica.notebook.pages) => " .. json.encode(self.pages:value()))
     print("KK-TEST> Pages changed: " .. tostring(count))
 end
 
@@ -60,6 +62,7 @@ function Notebook:GetPages()
     end
     if res == nil then
         print("KK-TEST> An empty book is retrieved!")
+        -- TODO Should I add ForceUpdate?
         res = {}
     end
     return res

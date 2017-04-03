@@ -35,10 +35,19 @@ local Notebook = Class(function(self, inst)
 end,
 nil,
 {
+    -- This setter function is invoked when field 'self.pages' is changed
+    -- Currently tracked sessions:
+    --  * self.pages = {}          @ <constructor>
+    --  * self.pages = data.pages  @ OnLoad
+    --  * self.pages = {}          @ Clear
     pages = function(self, newpages)
         print("KK-TEST> Setter of 'pages' is invoked.")
         if self.inst.replica.notebook then
-            self.inst.replica.notebook:SetPages(newpages)
+            --self.inst.replica.notebook:SetPages(newpages)
+            self.inst.replica.notebook.pages:set(newpages)
+            self.inst.replica.notebook.pages:set_local(newpages)
+        else
+            print("KK-TEST> Field 'self.inst.replica.notebook' not found!")
         end
     end
 })
