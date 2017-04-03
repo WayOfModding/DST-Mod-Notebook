@@ -34,6 +34,7 @@ local Notebook = Class(function(self, inst)
     inst:AddTag("notebook")
     --inst:DoTaskInTime(0, RegisterNetListeners)
 end,
+nil,
 {
     pages = function(self, newpages)
         print("KK-TEST> Setter of 'pages' is invoked.")
