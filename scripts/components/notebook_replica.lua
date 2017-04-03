@@ -16,10 +16,10 @@ function Notebook:GetPages()
     print("KK-TEST> Function Notebook(replica):SetPages() is invoked.")
     if self.inst.components.notebook ~= nil then
         print("KK-TEST> self.inst.components.notebook is found.")
-        return self.inst.components.notebook.pages
+        return self.inst.components.notebook.pages or {}
     else
         print("KK-TEST> self.inst.components.notebook is NOT found.")
-        return self.pages:value()
+        return self.pages:value() or {}
     end
 end
 
