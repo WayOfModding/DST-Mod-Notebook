@@ -6,14 +6,6 @@ local Menu = require "widgets/menu"
 local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
 
-local function GetPage(book, page)
-    return book.components.notebook:GetPage(page)
-end
-
-local function GetTitle(book)
-    return GetPage(book, 0)
-end
-
 local function SetPages(book, pages, marks)
     print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
     
@@ -22,11 +14,11 @@ local function SetPages(book, pages, marks)
         marks[page] = pages[page]
     end
     
-    book.components.notebook:SetPages(marks)
+    book.replica.notebook:SetPages(marks)
 end
 
 local function EndWriting(book, player)
-    book.components.notebook:EndWriting(player)
+    book.replica.notebook:EndWriting(player)
 end
 
 local function onaccept(inst, doer, widget)
@@ -160,10 +152,17 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Pages
     -------------------------------------------------------------------------------
     self.page = 0
+    -- Load all pages into this widget
     self.pages = writeable.replica.notebook and writeable.replica.notebook:GetPages() or {}
     self.marks = {}
+    local function GetPage(page)
+        return self.pages[page] or ""
+    end
+    local function GetTitle()
+        return GetPage(0)
+    end
     local function OnPageUpdated(page)
-        local res = self.pages[page] or GetPage(writeable, page) or ""
+        local res = GetPage(page) or ""
         if page == 0 then
             self.edit_text:SetHAlign(ANCHOR_MIDDLE)
         else
@@ -200,6 +199,9 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         end
         self.edit_text:SetEditing(true)
     end
+    
+    -- Initialize text area
+    screen.edit_text:SetString(GetTitle())
     
     -------------------------------------------------------------------------------
     -- Buttons
@@ -382,7 +384,6 @@ local function ShowWriteableWidget(player, playerhud, writeable)
         -- Have to set editing AFTER pushscreen finishes.
         screen.edit_text:SetEditing(true)
     end
-    screen.edit_text:SetString(GetTitle(writeable))
     return screen
 end
 

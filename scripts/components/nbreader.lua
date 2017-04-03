@@ -12,12 +12,12 @@ function NotebookReader:Read(book)
     if book == nil then
         return false, "NotebookReader:Read: 'book' is nil"
     end
-    if book.components.notebook == nil then
-        return false, "NotebookReader:Read: 'notebook' is nil"
+    if book.replica.notebook == nil then
+        return false, "NotebookReader:Read: 'book.replica.notebook' is nil"
     end
     
     local player = self.inst
-    return book.components.notebook:BeginWriting(player)
+    return book.replica.notebook:BeginWriting(player)
 end
 
 return NotebookReader

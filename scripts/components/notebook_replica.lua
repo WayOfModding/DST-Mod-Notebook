@@ -1,5 +1,27 @@
 local json = require("json")
 
+local function SendRPC(namespace, name, ...)
+    print("KK-TEST> SendRPC:", ...)
+    local id_table =
+    {
+        namespace = namespace,
+        id = MOD_RPC[namespace][name].id
+    }
+    SendModRPCToServer(id_table, ...)
+end
+
+local function setpages(self, pages)
+    print("KK-TEST> Function 'setpages' is invoked.")
+    local count = 0
+    local _pages = self.pages:value() or {}
+    for page, text in pairs(pages) do
+        _pages[page] = text
+        count = count + 1
+    end
+    self.pages:set_local(_pages)
+    print("KK-TEST> Pages changed: " .. tostring(count))
+end
+
 local Notebook = Class(function(self, inst)
     self.inst = inst
     
@@ -7,9 +29,22 @@ local Notebook = Class(function(self, inst)
     self.pages = net_entity(inst.GUID, "notebook.pages", "pagedirty")
 end)
 
-function Notebook:SetPages(newpages)
-    print("KK-TEST> Function Notebook(replica):SetPages(" .. json.encode(newpages) .. ").")
-    self.pages:set(newpages)
+function Notebook:GetDebugString()
+    return "Notebook(replica)" .. json.encode(self:GetPages())
+end
+
+function Notebook:SetPages(pages)
+    print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked.")
+    if self.inst.components.notebook ~= nil then
+        self.inst.components.notebook:SetPages(pages)
+    else
+        -- Update pages locally
+        setpages(self, pages)
+        -- Send new pages to server with RPC
+        pages = json.encode(pages)
+        assert(type(pages) == "string", "Error occurred while encoding json string!")
+        SendRPC("NOTEBOOK", "SetPages", self.inst, pages)
+    end
 end
 
 function Notebook:GetPages()
@@ -20,6 +55,27 @@ function Notebook:GetPages()
     else
         print("KK-TEST> self.inst.components.notebook is NOT found.")
         return self.pages:value() or {}
+    end
+end
+
+
+function Notebook:BeginWriting(doer)
+    if self.inst.components.notebook ~= nil then
+        return self.inst.components.notebook:BeginWriting(doer)
+    elseif doer ~= nil and doer == ThePlayer then
+        if doer.HUD == nil then
+            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
+        else
+            return makescreen(self.inst, doer)
+        end
+    else
+        return false, "KK-TEST> Invalid doer!"
+    end
+end
+
+function Notebook:EndWriting(doer)
+    if self.inst.components.notebook ~= nil then
+        return self.inst.components.notebook:EndWriting(doer)
     end
 end
 

@@ -1,16 +1,6 @@
 local makescreen = require("screens/notebookscreen")
 local json = require("json")
 
-local function SendRPC(namespace, name, ...)
-    print("KK-TEST> SendRPC:", ...)
-    local id_table =
-    {
-        namespace = namespace,
-        id = MOD_RPC[namespace][name].id
-    }
-    SendModRPCToServer(id_table, ...)
-end
-
 local function setpages(self, pages)
     print("KK-TEST> Function 'setpages' is invoked.")
     local count = 0
@@ -44,9 +34,6 @@ nil,
     end
 })
 
-------------------------------------------------------------
--- Common APIs
-------------------------------------------------------------
 function Notebook:OnSave()
     return { pages = self.pages }
 end
@@ -58,10 +45,6 @@ end
 
 function Notebook:GetDebugString()
     return "Notebook" .. json.encode(self.pages)
-end
-
-function Notebook:GetPage(page)
-    return self.pages and self.pages[page] or ""
 end
 
 function Notebook:Clear()
@@ -95,46 +78,30 @@ function Notebook:EndWriting(doer)
     self.inst:RemoveEventCallback("onremove", self.onclosepopups, doer)
 end
 
-if TheWorld.ismastersim then
-------------------------------------------------------------
--- Server APIs
-------------------------------------------------------------
-    function Notebook:SetPages(pages)
-        print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
-        if pages == nil then
-            return false, "Nil parameter 'pages'"
-        end
-        if type(pages) == "string" then
-            pages = json.decode(pages)
-            assert(type(pages) == "table", "Error occurred while decoding json string!")
-        elseif type(pages) ~= "table" then
-            return false, "Invalid parameter type 'pages': " .. type(pages)
-        end
-        setpages(self, pages)
-        return true
+function Notebook:SetPages(pages)
+    print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
+    if pages == nil then
+        return false, "Nil parameter 'pages'"
     end
-    
-    -- Invoked when this component is removed from entity
-    function Notebook:OnRemoveFromEntity()
-        self:EndWriting(self.inst.components.inventoryitem
-            and self.inst.components.inventoryitem.owner
-            or ThePlayer)
-        self.inst:RemoveTag("notebook")
-        self:Clear()
+    if type(pages) == "string" then
+        pages = json.decode(pages)
+        assert(type(pages) == "table", "Error occurred while decoding json string!")
+    elseif type(pages) ~= "table" then
+        return false, "Invalid parameter type 'pages': " .. type(pages)
     end
-
-    Notebook.OnRemoveEntity = Notebook.EndWriting
-else
-------------------------------------------------------------
--- Client APIs
-------------------------------------------------------------
-    function Notebook:SetPages(pages)
-        print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
-        setpages(self, pages)
-        pages = json.encode(pages)
-        assert(type(pages) == "string", "Error occurred while encoding json string!")
-        SendRPC("NOTEBOOK", "SetPages", self.inst, pages)
-    end
+    setpages(self, pages)
+    return true
 end
+
+-- Invoked when this component is removed from entity
+function Notebook:OnRemoveFromEntity()
+    self:EndWriting(self.inst.components.inventoryitem
+        and self.inst.components.inventoryitem.owner
+        or ThePlayer)
+    self.inst:RemoveTag("notebook")
+    self:Clear()
+end
+
+Notebook.OnRemoveEntity = Notebook.EndWriting
 
 return Notebook
