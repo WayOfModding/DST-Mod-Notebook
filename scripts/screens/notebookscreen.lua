@@ -201,7 +201,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end
     
     -- Initialize text area
-    screen.edit_text:SetString(GetTitle())
+    self.edit_text:SetString(GetTitle())
     
     -------------------------------------------------------------------------------
     -- Buttons
