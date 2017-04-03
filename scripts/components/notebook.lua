@@ -11,11 +11,19 @@ local function SendRPC(namespace, name, ...)
     SendModRPCToServer(id_table, ...)
 end
 
+local function setpages(self, pages)
+    print("KK-TEST> Function 'setpages' is invoked.")
+    local count = 0
+    for page, text in pairs(pages) do
+        self.pages[page] = text
+        count = count + 1
+    end
+    print("KK-TEST> Pages changed: " .. tostring(count))
+end
+
 local Notebook = Class(function(self, inst)
     self.inst = inst
     --print("KK-TEST(notebook)>", dumptable(self.inst))
-    print("KK-TEST> ClientName:", self.inst.Network:GetClientName())
-    print("KK-TEST> UserID:",self.inst.Network:GetUserID())
     
     self.pages = {}
     
@@ -79,15 +87,17 @@ if TheWorld.ismastersim then
 -- Server APIs
 ------------------------------------------------------------
     function Notebook:SetPages(pages)
+        print("KK-TEST> Function 'Notebook:SetPages' is invoked on server-side.")
+        if pages == nil then
+            return false, "Nil parameter 'pages'"
+        end
         if type(pages) == "string" then
             pages = json.decode(pages)
             assert(type(pages) == "table", "Error occurred while decoding json string!")
         elseif type(pages) ~= "table" then
             return false, "Invalid parameter type 'pages': " .. type(pages)
         end
-        for page, text in pairs(pages) do
-            self.pages[page] = text
-        end
+        setpages(self, pages)
         self.inst:PushEvent("server.notebook.setpages", { newpages = pages })
         return true
     end
@@ -107,6 +117,8 @@ else
 -- Client APIs
 ------------------------------------------------------------
     function Notebook:SetPages(pages)
+        print("KK-TEST> Function 'Notebook:SetPages' is invoked on client-side.")
+        setpages(self, pages)
         self.inst:PushEvent("client.notebook.setpages", { newpages = pages })
         pages = json.encode(pages)
         assert(type(pages) == "string", "Error occurred while encoding json string!")
