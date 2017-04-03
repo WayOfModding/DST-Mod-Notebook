@@ -38,7 +38,9 @@ nil,
 {
     pages = function(self, newpages)
         print("KK-TEST> Setter of 'pages' is invoked.")
-        self.inst.replica.notebook:SetPages(newpages)
+        if self.inst.replica.notebook then
+            self.inst.replica.notebook:SetPages(newpages)
+        end
     end
 })
 

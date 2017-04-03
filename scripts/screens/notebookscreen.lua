@@ -160,7 +160,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Pages
     -------------------------------------------------------------------------------
     self.page = 0
-    self.pages = writeable.replica.notebook:GetPages()
+    self.pages = writeable.replica.notebook and writeable.replica.notebook:GetPages() or {}
     self.marks = {}
     local function OnPageUpdated(page)
         local res = self.pages[page] or GetPage(writeable, page) or ""
