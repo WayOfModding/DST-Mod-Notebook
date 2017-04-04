@@ -13,23 +13,39 @@ end
 
 local function setpages(self, pages)
     print("KK-TEST> Function 'setpages' is invoked.")
-    local count = 0
-    local _pages = self.pages:value() or {}
+    -- Master Sim stores notebook data in 'notebook' COMPONENT instead REPLICA
     for page, text in pairs(pages) do
-        _pages[page] = text
-        count = count + 1
+        self.pages[page] = text
     end
-    print("KK-TEST> 1st Dump(replica.notebook.pages) => " .. json.encode(self.pages:value()))
-    self.pages:set_local(_pages)
-    print("KK-TEST> 2nd Dump(replica.notebook.pages) => " .. json.encode(self.pages:value()))
-    print("KK-TEST> Pages changed: " .. tostring(count))
 end
 
 local Notebook = Class(function(self, inst)
     self.inst = inst
     
     -- @see netvars.lua
-    self.pages = net_entity(inst.GUID, "notebook.pages", "pagedirty")
+    self.newpages = net_string(inst.GUID, "notebook.newpages", "pagedirty")
+    
+    -- Only declare these two fields on client side
+    if not TheWorld.ismastersim then
+        self.pages = {}
+        
+        self.OnPagesDirty = function()
+            local newpages = self.newpages:value()
+            if newpages == nil or newpages == "" or newpages == "{}" or newpages == "[]" then
+                return false
+            end
+            newpages = json.decode(newpages)
+            assert(type(newpages) == "table", "KK-TEST> Invalid 'newpages' type: " .. type(newpages))
+            -- update local data structure
+            setpages(self, newpages)
+            return true
+        end
+        self.OnRemoveFromEntity = function(self)
+            self:RemoveEventCallback("pagedirty", self.OnPagesDirty)
+        end
+        
+        inst:ListenForEvent("pagedirty", self.OnPagesDirty)
+    end
 end)
 
 function Notebook:GetDebugString()
@@ -39,6 +55,7 @@ end
 function Notebook:SetPages(pages)
     print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked.")
     if self.inst.components.notebook ~= nil then
+        -- Host client
         self.inst.components.notebook:SetPages(pages)
     else
         -- Update pages locally
@@ -58,13 +75,9 @@ function Notebook:GetPages()
         res = self.inst.components.notebook.pages
     else
         --print("KK-TEST> self.inst.components.notebook is NOT found.")
-        res = self.pages:value()
+        res = self.pages
     end
-    if res == nil then
-        print("KK-TEST> An empty book is retrieved!")
-        -- TODO Should I add ForceUpdate?
-        res = {}
-    end
+    assert(res ~= nil, "KK-TEST> An empty book is retrieved!")
     return res
 end
 

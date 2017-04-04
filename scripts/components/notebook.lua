@@ -3,12 +3,18 @@ local json = require("json")
 
 local function setpages(self, pages)
     print("KK-TEST> Function 'setpages' is invoked.")
-    local count = 0
     for page, text in pairs(pages) do
         self.pages[page] = text
-        count = count + 1
     end
-    print("KK-TEST> Pages changed: " .. tostring(count))
+end
+
+-- Notify client that a change is made to 'self.pages' in 'notebook' COMPONENT
+local function notify(self)
+    local notebook = self.inst.replica.notebook
+    assert(notebook ~= nil, "KK-TEST> Field 'inst.replica.notebook' not found!")
+    local pages = json.encode(self.pages)
+    notebook.newpages:set_local(pages)
+    notebook.newpages:set(pages)
 end
 
 local Notebook = Class(function(self, inst)
@@ -32,30 +38,7 @@ local Notebook = Class(function(self, inst)
             return nil
         end
     end
-end,
-nil,
-{
-    -- This setter function is invoked when field 'self.pages' is changed
-    -- Currently tracked sessions:
-    --  * self.pages = {}          @ <constructor>
-    --  * self.pages = data.pages  @ OnLoad
-    --  * self.pages = {}          @ Clear
-    pages = function(self, newpages, oldpages)
-        print("KK-TEST> Setter of 'pages' is invoked.")
-        if self.inst.replica.notebook then
-            print("KK-TEST> Field 'self.inst.replica.notebook' is found!")
-            --self.inst.replica.notebook:SetPages(newpages)
-            self.inst.replica.notebook.pages:set(newpages)
-            self.inst.replica.notebook.pages:set_local(newpages)
-        else
-            print("KK-TEST> Field 'self.inst.replica.notebook' not found!")
-        end
-        print("KK-TEST> START")
-        print(dumptable(newpages))
-        print(dumptable(oldpages))
-        print("KK-TEST> END")
-    end
-})
+end)
 
 function Notebook:OnSave()
     return { pages = self.pages }
@@ -64,6 +47,7 @@ end
 function Notebook:OnLoad(data, newents)
     print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked.")
     self.pages = data.pages
+    notify(self)
 end
 
 function Notebook:GetDebugString()
@@ -72,6 +56,7 @@ end
 
 function Notebook:Clear()
     self.pages = {}
+    notify(self)
 end
 
 function Notebook:BeginWriting(doer)
