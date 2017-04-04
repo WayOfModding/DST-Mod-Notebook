@@ -4,7 +4,6 @@ local Ingredient = GLOBAL.Ingredient
 local RECIPETABS = GLOBAL.RECIPETABS
 local STRINGS = GLOBAL.STRINGS
 local TECH = GLOBAL.TECH
-local TheWorld = GLOBAL.TheWorld
 local ACTIONS = GLOBAL.ACTIONS
 local State = GLOBAL.State
 local FRAMES = GLOBAL.FRAMES
@@ -45,7 +44,13 @@ Requirement:
 AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
 
 AddPlayerPostInit(function(inst)
-    inst:AddComponent("nbreader")
+    -- Global variable 'TheWorld' is not yet initialized before getting into the game,
+    -- caching it would cause a null pointer exception.
+    if GLOBAL.TheWorld.ismastersim then
+        -- Components should only be added on server side!
+        -- If a component is added on client side will cause duplicate replica exception!
+        inst:AddComponent("nbreader")
+    end
 end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
