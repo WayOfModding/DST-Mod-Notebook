@@ -12,13 +12,15 @@ local EventHandler = GLOBAL.EventHandler
 local ActionHandler = GLOBAL.ActionHandler
 local SpawnPrefab = GLOBAL.SpawnPrefab
 local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
+local checkentity = GLOBAL.checkentity
+local checkstring = GLOBAL.checkstring
+local assert = GLOBAL.assert
 
 local NotebookMod = {}
 
 PrefabFiles =
 {
     "book_notebook",
-    "notebook_classified",
 }
 
 -- Strings
@@ -41,41 +43,54 @@ Requirement:
 --]]
 AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
 
-AddPrefabPostInit("book_notebook", function(inst)
-    if GLOBAL.TheWorld.ismastersim then
-        inst:AddComponent("nbreader")
-    end
-end)
 AddPlayerPostInit(function(inst)
+    -- Global variable 'TheWorld' is not yet initialized before getting into the game,
+    -- caching it would cause a null pointer exception.
     if GLOBAL.TheWorld.ismastersim then
+        -- Components should only be added on server side!
+        -- If a component is added on client side will cause duplicate replica exception!
         inst:AddComponent("nbreader")
     end
 end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
+    print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
     if targ == nil then
-        return false, "Action.Read: 'targ' is nil"
+        local reason = "Action.Read: 'targ' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
     end
     if act.doer == nil then
-        return false, "Action.Read: 'act.doer' is nil"
-    end
-    if targ.components.notebook == nil then
-        return false, "Action.Read: 'targ.components.notebook' is nil"
+        local reason = "Action.Read: 'act.doer' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
     end
     if act.doer.components.nbreader == nil then
-        return false, "Action.Read: 'act.doer.components.nbreader' is nil"
+        local reason = "Action.Read: 'act.doer.components.nbreader' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
     end
-    return act.doer.components.nbreader:Read(targ)
+    local result, reason = act.doer.components.nbreader:Read(targ)
+    if result then
+        return true
+    else
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
+    end
 end)
 action_nbread.mount_valid = true
 
-AddComponentAction("INVENTORY", "nbreader", function(inst, doer, actions)
-    if inst:HasTag("nbreader") then
+--[[
+All possible component action categories: SCENE, USEITEM, POINT, EQUIPPED, INVENTORY, ISVALID
+--]]
+AddComponentAction("INVENTORY", "notebook", function(inst, doer, actions)
+    if inst:HasTag("notebook") then
         table.insert(actions, ACTIONS.NBREAD)
     end
 end)
 
+-- This loads notebook_replica into book_notebook
 AddReplicableComponent("notebook")
 
 local state_notebook = State{
@@ -145,28 +160,52 @@ AddStategraphState("wilson_client", state_notebook)
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 
-NotebookMod.RPC =
+local function printinvalid(rpcname, player)
+    print(string.format("Invalid %s RPC from (%s) %s", rpcname, player.userid or "", player.name or ""))
+
+    --This event is for MODs that want to handle players sending invalid rpcs
+    TheWorld:PushEvent("invalidrpc", { player = player, rpcname = rpcname })
+end
+
+--[[
+All available validation functions in networkclientrpc.lua
+function checkbool(val)
+function checknumber(val)
+function checkuint(val)
+function checkstring(val)
+function checkentity(val)
+optbool = checkbool
+function optnumber(val)
+function optuint(val)
+function optstring(val)
+function optentity(val)
+--]]
+local RPC_HANDLERS =
 {
     NOTEBOOK =
     {
-        SetPages =
-        {
-            fn = function(book, doer, pages)
-                if not (checkentity(book))
-                then
-                    printinvalid("SetPages", doer)
-                    return
-                end
-                if book.components.notebook then
-                    book:SetPages(doer, pages)
-                end
-            end,
-        },
+        -- Parameters:
+        --  * book:     instance of prefab 'book_notebook'
+        --  * pages:    string of pages table serialized by json
+        SetPages = function(player, book, pages)
+            print("KK-TEST> RPC handler 'SetPages' is invoked.")
+            if not (checkentity(book)
+                and checkstring(pages))
+            then
+                printinvalid("SetPages", player)
+                return false, "Invalid RPC"
+            end
+            if book.components.notebook then
+                return book.components.notebook:SetPages(pages)
+            else
+                return false, "'book.components.notebook' not found!"
+            end
+        end,
     },
 }
 
-for namespace, nstable in pairs(NotebookMod.RPC) do
-    for name, attr in pairs(nstable) do
-        AddModRPCHandler(namespace, name, attr.fn)
+for namespace, nstable in pairs(RPC_HANDLERS) do
+    for name, func in pairs(nstable) do
+        AddModRPCHandler(namespace, name, func)
     end
 end

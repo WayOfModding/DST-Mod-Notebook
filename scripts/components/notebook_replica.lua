@@ -1,100 +1,99 @@
 local makescreen = require("screens/notebookscreen")
+local json = require("json")
+
+local function SendRPC(namespace, name, ...)
+    print("KK-TEST> SendRPC:", ...)
+    local id_table =
+    {
+        namespace = namespace,
+        id = MOD_RPC[namespace][name].id
+    }
+    SendModRPCToServer(id_table, ...)
+end
+
+local function setpages(self, pages)
+    print("KK-TEST> Function 'setpages' is invoked.")
+    local count = 0
+    local _pages = self.pages:value() or {}
+    for page, text in pairs(pages) do
+        _pages[page] = text
+        count = count + 1
+    end
+    print("KK-TEST> 1st Dump(replica.notebook.pages) => " .. json.encode(self.pages:value()))
+    self.pages:set_local(_pages)
+    print("KK-TEST> 2nd Dump(replica.notebook.pages) => " .. json.encode(self.pages:value()))
+    print("KK-TEST> Pages changed: " .. tostring(count))
+end
 
 local Notebook = Class(function(self, inst)
     self.inst = inst
-
-    if TheWorld.ismastersim then
-        self.classified = SpawnPrefab("notebook_classified")
-        self.classified.entity:SetParent(inst.entity)
-    else
-        if self.classified == nil and inst.notebook_classified ~= nil then
-            self.classified = inst.notebook_classified
-            inst.notebook_classified.OnRemoveEntity = nil
-            inst.notebook_classified = nil
-            self:AttachClassified(self.classified)
-        end
-    end
+    
+    -- @see netvars.lua
+    self.pages = net_entity(inst.GUID, "notebook.pages", "pagedirty")
 end)
 
---------------------------------------------------------------------------
+function Notebook:GetDebugString()
+    return "Notebook(replica)" .. json.encode(self:GetPages())
+end
 
-function Notebook:OnRemoveFromEntity()
-    if self.classified ~= nil then
-        if TheWorld.ismastersim then
-            self.classified:Remove()
-            self.classified = nil
-        else
-            self.classified._parent = nil
-            self.inst:RemoveEventCallback("onremove", self.ondetachclassified, self.classified)
-            self:DetachClassified()
-        end
+function Notebook:SetPages(pages)
+    print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked.")
+    if self.inst.components.notebook ~= nil then
+        self.inst.components.notebook:SetPages(pages)
+    else
+        -- Update pages locally
+        setpages(self, pages)
+        -- Send new pages to server with RPC
+        pages = json.encode(pages)
+        assert(type(pages) == "string", "Error occurred while encoding json string!")
+        SendRPC("NOTEBOOK", "SetPages", self.inst, pages)
     end
 end
 
-Notebook.OnRemoveEntity = Notebook.OnRemoveFromEntity
-
---------------------------------------------------------------------------
---Client triggers writing based on receiving access to classified data
---------------------------------------------------------------------------
-
-local function BeginWriting(inst, self)
-    self:BeginWriting(ThePlayer)
+function Notebook:GetPages()
+    print("KK-TEST> Function Notebook(replica):SetPages() is invoked.")
+    local res = nil
+    if self.inst.components.notebook ~= nil then
+        --print("KK-TEST> self.inst.components.notebook is found.")
+        res = self.inst.components.notebook.pages
+    else
+        --print("KK-TEST> self.inst.components.notebook is NOT found.")
+        res = self.pages:value()
+    end
+    if res == nil then
+        print("KK-TEST> An empty book is retrieved!")
+        -- TODO Should I add ForceUpdate?
+        res = {}
+    end
+    return res
 end
 
 function Notebook:GetPage(page)
-    return self.classified.pages:value()[page]
+    return self:GetPages()[page] or ""
 end
 
-function Notebook:AttachClassified(classified)
-    self.classified = classified
-
-    self.ondetachclassified = function() self:DetachClassified() end
-    self.inst:ListenForEvent("onremove", self.ondetachclassified, classified)
-
-    self.inst:DoTaskInTime(0, BeginWriting, self)
+function Notebook:GetTitle()
+    return self:GetPage(0)
 end
 
-function Notebook:DetachClassified()
-    self.classified = nil
-    self.ondetachclassified = nil
-    self:EndWriting()
-end
-
---------------------------------------------------------------------------
---Common interface
---------------------------------------------------------------------------
 
 function Notebook:BeginWriting(doer)
     if self.inst.components.notebook ~= nil then
-        self.inst.components.notebook:BeginWriting(doer)
-    elseif self.classified ~= nil
-        and doer ~= nil
-        and doer == ThePlayer then
-
+        return self.inst.components.notebook:BeginWriting(doer)
+    elseif doer ~= nil and doer == ThePlayer then
         if doer.HUD == nil then
-            return false, "Notebook(replica):BeginWriting: 'doer.HUD' is nil"
+            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
         else
-            local screen = makescreen(self.inst, doer)
-            if screen == nil then
-                return false, "Notebook(replica):BeginWriting: Fail to make notebook screen!"
-            else
-                return true
-            end
+            return makescreen(self.inst, doer)
         end
+    else
+        return false, "KK-TEST> Invalid doer!"
     end
 end
 
-function Notebook:EndWriting()
+function Notebook:EndWriting(doer)
     if self.inst.components.notebook ~= nil then
-        self.inst.components.notebook:EndWriting()
-    end
-end
-
-function Notebook:SetWriter(writer)
-    self.classified.Network:SetClassifiedTarget(writer or self.inst)
-    if self.inst.components.notebook == nil then
-        --Should only reach here during notebook construction
-        assert(writer == nil)
+        return self.inst.components.notebook:EndWriting(doer)
     end
 end
 

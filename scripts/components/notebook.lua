@@ -1,113 +1,129 @@
 local makescreen = require("screens/notebookscreen")
+local json = require("json")
 
-local function gettext(inst, reader)
-    local that = inst.components.notebook
-    
-    if that then
-        local title = that.pages[0]
-        if title and title ~= "" then
-            return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
-        end
+local function setpages(self, pages)
+    print("KK-TEST> Function 'setpages' is invoked.")
+    local count = 0
+    for page, text in pairs(pages) do
+        self.pages[page] = text
+        count = count + 1
     end
+    print("KK-TEST> Pages changed: " .. tostring(count))
 end
 
 local Notebook = Class(function(self, inst)
-    self.inst           = inst
+    self.inst = inst
+    --print("KK-TEST(notebook)>", dumptable(self.inst))
     
-    self.writer         = nil
+    self.pages = {}
     
-    self.pages          = {}
-    
-    inst.components.inspectable.getspecialdescription = gettext
-    inst:AddTag("notebook")
-
     self.onclosepopups = function(doer)
-        self:EndWriting()
+        self:EndWriting(doer)
     end
-end)
+    
+    inst:AddTag("notebook")
+    --inst:DoTaskInTime(0, RegisterNetListeners)
+    
+    inst.components.inspectable.getspecialdescription = function(inst, reader)
+        local title = inst.replica.notebook:GetTitle()
+        if title and title ~= "" then
+            return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
+        else
+            return nil
+        end
+    end
+end,
+nil,
+{
+    -- This setter function is invoked when field 'self.pages' is changed
+    -- Currently tracked sessions:
+    --  * self.pages = {}          @ <constructor>
+    --  * self.pages = data.pages  @ OnLoad
+    --  * self.pages = {}          @ Clear
+    pages = function(self, newpages, oldpages)
+        print("KK-TEST> Setter of 'pages' is invoked.")
+        if self.inst.replica.notebook then
+            print("KK-TEST> Field 'self.inst.replica.notebook' is found!")
+            --self.inst.replica.notebook:SetPages(newpages)
+            self.inst.replica.notebook.pages:set(newpages)
+            self.inst.replica.notebook.pages:set_local(newpages)
+        else
+            print("KK-TEST> Field 'self.inst.replica.notebook' not found!")
+        end
+        print("KK-TEST> START")
+        print(dumptable(newpages))
+        print(dumptable(oldpages))
+        print("KK-TEST> END")
+    end
+})
 
 function Notebook:OnSave()
-    local data = {}
-    
-    data.pages      = self.pages
-    
-    return data
+    return { pages = self.pages }
 end
 
-function Notebook:OnLoad(data)
-    self.pages      = data.pages
-    -- Notify client
-    if self.inst.replica.notebook.classified then
-        self.inst.replica.notebook.classified.pages:set_local(self.pages)
-        self.inst.replica.notebook.classified.pages:set(self.pages)
-    end
+function Notebook:OnLoad(data, newents)
+    print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked.")
+    self.pages = data.pages
 end
 
-function Notebook:BeginWriting(doer)
-    if self.writer == nil then
-        -- Notify component update
-        self.inst:StartUpdatingComponent(self)
-        
-        self.writer = doer
-        -- Trigger when the pop-up window is closed
-        self.inst:ListenForEvent("ms_closepopups", self.onclosepopups, doer)
-        self.inst:ListenForEvent("onremove", self.onclosepopups, doer)
-        
-        -- Make pop-up window
-        if doer.HUD == nil then
-            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
-        else
-            local screen = makescreen(self.inst, doer)
-            if screen == nil then
-                return false, "Notebook:BeginWriting: Fail to make notebook screen!"
-            else
-                return true
-            end
-        end
-    else
-        return false, "Notebook:BeginWriting: Notebook is already being editing!"
-    end
-end
-
-function Notebook:GetPage(page)
-    return self.pages[page]
-end
-
-function Notebook:SetPages(doer, pages)
-    if doer ~= nil and self.writer == doer then
-        for page, text in pairs(pages) do
-            self.pages[page] = text
-        end
-    end
-end
-
-function Notebook:EndWriting()
-    if self.writer ~= nil then
-        self.inst:StopUpdatingComponent(self)
-        
-        self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, self.writer)
-        self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
-        
-        self.writer = nil
-    end
+function Notebook:GetDebugString()
+    return "Notebook" .. json.encode(self.pages)
 end
 
 function Notebook:Clear()
     self.pages = {}
 end
 
+function Notebook:BeginWriting(doer)
+    -- Notify component update
+    self.inst:StartUpdatingComponent(self)
+    
+    -- Trigger when the pop-up window is closed
+    self.inst:ListenForEvent("ms_closepopups", self.onclosepopups, doer)
+    self.inst:ListenForEvent("onremove", self.onclosepopups, doer)
+    
+    -- Make pop-up window
+    if doer ~= nil and doer == ThePlayer then
+        if doer.HUD == nil then
+            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
+        else
+            return makescreen(self.inst, doer)
+        end
+    else
+        return false, "KK-TEST> Invalid doer!"
+    end
+end
+
+function Notebook:EndWriting(doer)
+    self.inst:StopUpdatingComponent(self)
+    
+    self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, doer)
+    self.inst:RemoveEventCallback("onremove", self.onclosepopups, doer)
+end
+
+function Notebook:SetPages(pages)
+    print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
+    if pages == nil then
+        return false, "Nil parameter 'pages'"
+    end
+    if type(pages) == "string" then
+        print("KK-TEST> Decoding RPC string: \"" .. pages .. "\"")
+        pages = json.decode(pages)
+        assert(type(pages) == "table", "Error occurred while decoding json string!")
+    elseif type(pages) ~= "table" then
+        return false, "Invalid parameter type 'pages': " .. type(pages)
+    end
+    setpages(self, pages)
+    return true
+end
+
 -- Invoked when this component is removed from entity
 function Notebook:OnRemoveFromEntity()
-    self:EndWriting()
+    self:EndWriting(self.inst.components.inventoryitem
+        and self.inst.components.inventoryitem.owner
+        or ThePlayer)
     self.inst:RemoveTag("notebook")
-    
     self:Clear()
-    
-    if self.inst.components.inspectable ~= nil
-            and self.inst.components.inspectable.getspecialdescription == gettext 
-    then
-        self.inst.components.inspectable.getspecialdescription = nil
-    end
 end
 
 Notebook.OnRemoveEntity = Notebook.EndWriting
