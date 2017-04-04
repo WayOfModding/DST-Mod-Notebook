@@ -28,11 +28,15 @@ local function fn(Sim)
     inst.AnimState:SetBuild("book_notebook")
     inst.AnimState:PlayAnimation("idle")
     
+    inst:AddTag("_notebook")
+    
     inst.entity:SetPristine()
 
     if not TheWorld.ismastersim then
         return inst
     end
+    
+    inst:RemoveTag("_notebook")
     
     inst:AddComponent("inspectable")
     
