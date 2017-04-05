@@ -35,6 +35,7 @@ local Notebook = Class(function(self, inst)
         if title and title ~= "" then
             return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
         else
+            print("KK-TEST> Inspectable component retrieves empty book title!")
             return nil
         end
     end
