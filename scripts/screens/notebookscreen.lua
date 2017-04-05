@@ -22,6 +22,66 @@ local function EndWriting(book, player)
     book.replica.notebook:EndWriting(player)
 end
 
+local function GetPage(self, page)
+    local res = self.pages[page] or ""
+    print("KK-TEST> Function Screen:GetPage() returns \"" .. res .. "\".")
+    return res
+end
+local function GetTitle(self)
+    local res = GetPage(self, 0)
+    print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
+    return res
+end
+local function OnPageUpdated(self, page)
+    print("KK-TEST> Function Screen:OnPageUpdated() is invoked.")
+    local res = GetPage(self, page) or ""
+    if page == 0 then
+        self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+    else
+        self.edit_text:SetHAlign(ANCHOR_LEFT)
+    end
+    self.edit_text:SetString(res)
+end
+local function MarkPage(self, page)
+    print("KK-TEST> Function Screen:MarkPage() is invoked.")
+    local text = self.edit_text:GetString() or ""
+    self.pages[page] = text
+    self.marks[page] = true
+end
+local function MarkCurrent(self)
+    print("KK-TEST> Function Screen:MarkCurrent() is invoked.")
+    MarkPage(self, self.page)
+end
+local function UpdatePage(self, page)
+    print("KK-TEST> Function Screen:UpdatePage() is invoked.")
+    self.page = page
+    OnPageUpdated(self, page)
+end
+local function LastPage(self)
+    print("KK-TEST> Function Screen:LastPage() is invoked.")
+    local oldpage = self.page
+    local newpage = oldpage - 1
+    if newpage < 0 then newpage = 0 end
+    if newpage < oldpage then
+        UpdatePage(self, newpage)
+    end
+    self.edit_text:SetEditing(true)
+end
+local function NextPage(self)
+    print("KK-TEST> Function Screen:NextPage() is invoked.")
+    local oldpage = self.page
+    local newpage = oldpage + 1
+    local limit = #self.pages + 1
+    -- Prevent abusing 'Next Page'
+    if newpage > limit then
+        newpage = limit
+    end
+    if newpage > oldpage then
+        UpdatePage(self, newpage)
+    end
+    self.edit_text:SetEditing(true)
+end
+
 local function onaccept(inst, doer, widget)
     if not widget.isopen then
         return
@@ -155,70 +215,11 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.replica.notebook:GetPages()
-    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages))
+    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\n" .. dumptable(self.pages))
     self.marks = {}
-    local function GetPage(page)
-        local res = self.pages[page] or ""
-        print("KK-TEST> Function Screen:GetPage() returns \"" .. res .. "\".")
-        return res
-    end
-    local function GetTitle()
-        local res = GetPage(0)
-        print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
-        return res
-    end
-    local function OnPageUpdated(page)
-        print("KK-TEST> Function Screen:OnPageUpdated() is invoked.")
-        local res = GetPage(page) or ""
-        if page == 0 then
-            self.edit_text:SetHAlign(ANCHOR_MIDDLE)
-        else
-            self.edit_text:SetHAlign(ANCHOR_LEFT)
-        end
-        self.edit_text:SetString(res)
-    end
-    local function MarkPage(page)
-        print("KK-TEST> Function Screen:MarkPage() is invoked.")
-        local text = self.edit_text:GetString() or ""
-        self.pages[page] = text
-        self.marks[page] = true
-    end
-    local function MarkCurrent()
-        print("KK-TEST> Function Screen:MarkCurrent() is invoked.")
-        MarkPage(self.page)
-    end
-    local function UpdatePage(page)
-        print("KK-TEST> Function Screen:UpdatePage() is invoked.")
-        self.page = page
-        OnPageUpdated(page)
-    end
-    local function LastPage()
-        print("KK-TEST> Function Screen:LastPage() is invoked.")
-        local oldpage = self.page
-        local newpage = oldpage - 1
-        if newpage < 0 then newpage = 0 end
-        if newpage < oldpage then
-            UpdatePage(newpage)
-        end
-        self.edit_text:SetEditing(true)
-    end
-    local function NextPage()
-        print("KK-TEST> Function Screen:NextPage() is invoked.")
-        local oldpage = self.page
-        local newpage = oldpage + 1
-        local limit = #self.pages + 1
-        -- Prevent abusing 'Next Page'
-        if newpage > limit then
-            newpage = limit
-        end
-        if newpage > oldpage then
-            UpdatePage(newpage)
-        end
-        self.edit_text:SetEditing(true)
-    end
     
     -- Initialize text area
-    local title = GetTitle()
+    local title = GetTitle(self)
     self.edit_text:SetString(title)
     self.edit_text:SetFocus()
     print("KK-TEST> Text area is initialized: \"" .. title .. "\", \"" .. self.edit_text:GetString() .. "\"")
@@ -235,7 +236,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Clear
     table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
         print("KK-TEST> Button 'Clear' is pressed.")
-        MarkCurrent()
+        MarkCurrent(self)
         onmiddle(self.writeable, self.owner, self)
     end, control = config.middlebtn.control })
     -- Accept
@@ -246,12 +247,12 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Last Page
     table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
         print("KK-TEST> Button 'Last Page' is pressed.")
-        LastPage()
+        LastPage(self)
     end, control = config.lastpagebtn.control })
     -- Next Page
     table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
         print("KK-TEST> Button 'Next Page' is pressed.")
-        NextPage()
+        NextPage(self)
     end, control = config.nextpagebtn.control })
 
     for i, v in ipairs(self.buttons) do
@@ -278,7 +279,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:OnControl(CONTROL_ACCEPT, false)
     self.edit_text.OnTextInputted = function()
         --print("KK-TEST> OnTextInputted: "..self:GetText())
-        MarkCurrent()
+        MarkCurrent(self)
     end
     self.edit_text.OnTextEntered = function()
         self:OnControl(CONTROL_ACCEPT, false)
