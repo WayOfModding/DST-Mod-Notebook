@@ -123,7 +123,7 @@ end
 --      * CollectEquippedActions(inst, target, actions, right)
 --      * CollectInventoryActions(inst, actions, right)
 function Notebook:CollectInventoryActions(doer, actions)
-    if doer.components.reader then
+    if doer.components.nbreader then
         table.insert(actions, ACTIONS.NBREAD)
     end
 end
