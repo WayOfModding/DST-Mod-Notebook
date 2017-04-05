@@ -25,7 +25,10 @@ local Ingredient = GLOBAL.Ingredient
 local RECIPETABS = GLOBAL.RECIPETABS
 local TECH = GLOBAL.TECH
 
-Recipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
+local recipe_notebook = Recipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE)
+
+local resolvefilepath = GLOBAL.resolvefilepath
+recipe_notebook.atlas = resolvefilepath("images/book_notebook.xml")
 
 AddPlayerPostInit(function(inst)
     inst:AddComponent("nbreader")
