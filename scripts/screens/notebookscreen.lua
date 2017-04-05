@@ -18,11 +18,11 @@ local function SetPages(book, pages, marks)
         marks[page] = pages[page]
     end
     
-    book.replica.notebook:SetPages(marks)
+    book.components.notebook:SetPages(marks)
 end
 
 local function EndWriting(book, player)
-    book.replica.notebook:EndWriting(player)
+    book.components.notebook:EndWriting(player)
 end
 
 local function GetPage(self, page)
@@ -233,7 +233,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -------------------------------------------------------------------------------
     self.page = 0
     -- Load all pages into this widget
-    self.pages = writeable.replica.notebook:GetPages()
+    self.pages = writeable.components.notebook:GetPages()
     print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):")
     dumptable(self.pages)
     self.marks = {}

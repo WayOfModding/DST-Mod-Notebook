@@ -1,19 +1,4 @@
 local require = GLOBAL.require
-local STRINGS = GLOBAL.STRINGS
-local Ingredient = GLOBAL.Ingredient
-local RECIPETABS = GLOBAL.RECIPETABS
-local STRINGS = GLOBAL.STRINGS
-local TECH = GLOBAL.TECH
-local ACTIONS = GLOBAL.ACTIONS
-local State = GLOBAL.State
-local FRAMES = GLOBAL.FRAMES
-local TimeEvent = GLOBAL.TimeEvent
-local EventHandler = GLOBAL.EventHandler
-local ActionHandler = GLOBAL.ActionHandler
-local SpawnPrefab = GLOBAL.SpawnPrefab
-local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
-local checkentity = GLOBAL.checkentity
-local checkstring = GLOBAL.checkstring
 local assert = GLOBAL.assert
 
 local NotebookMod = {}
@@ -23,6 +8,8 @@ PrefabFiles =
     "book_notebook",
 }
 
+------------------------------------------------------------------------
+local STRINGS = GLOBAL.STRINGS
 -- Strings
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
@@ -32,31 +19,34 @@ STRINGS.NOTEBOOK =
     BOOKTITLELEFT = "\"",
     BOOKTITLERIGHT = "\"",
 }
+------------------------------------------------------------------------
+local Recipe = GLOBAL.Recipe
+local Ingredient = GLOBAL.Ingredient
+local RECIPETABS = GLOBAL.RECIPETABS
+local TECH = GLOBAL.TECH
 
---[[
-Ingredient:
-    2x      papyrus
-Tabs:
-    Tools
-Requirement:
-    None
---]]
-AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
+Recipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
 
 AddPlayerPostInit(function(inst)
-    -- Global variable 'TheWorld' is not yet initialized before getting into the game,
-    -- caching it would cause a null pointer exception.
-    
-    -- Replicable components should only be added on server side!
-    -- If a component is added on client side will cause duplicate replica exception!
     inst:AddComponent("nbreader")
 end)
+------------------------------------------------------------------------
+local ACTIONS = GLOBAL.ACTIONS
+local Action = GLOBAL.Action
 
-local action_nbread = AddAction("NBREAD", "Read", function(act)
+local action_nbread = Action()
+action_nbread.id    = "NBREAD"
+action_nbread.str   = "Read"
+action_nbread.fn    = function(act)
     print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
     if targ == nil then
         local reason = "Action.Read: 'targ' is nil"
+        print("KK-TEST> Action failed: " .. reason)
+        return false, reason
+    end
+    if targ.components.notebook == nil then
+        local reason = "Action.Read: 'targ.components.notebook' is nil"
         print("KK-TEST> Action failed: " .. reason)
         return false, reason
     end
@@ -77,20 +67,15 @@ local action_nbread = AddAction("NBREAD", "Read", function(act)
         print("KK-TEST> Action failed: " .. reason)
         return false, reason
     end
-end)
-action_nbread.mount_valid = true
-
---[[
-All possible component action categories: SCENE, USEITEM, POINT, EQUIPPED, INVENTORY, ISVALID
---]]
-AddComponentAction("INVENTORY", "notebook", function(inst, doer, actions)
-    if inst:HasTag("notebook") then
-        table.insert(actions, ACTIONS.NBREAD)
-    end
-end)
-
--- This loads notebook_replica into book_notebook
-AddReplicableComponent("notebook")
+end
+AddAction(action_nbread)
+------------------------------------------------------------------------
+local State = GLOBAL.State
+local FRAMES = GLOBAL.FRAMES
+local TimeEvent = GLOBAL.TimeEvent
+local EventHandler = GLOBAL.EventHandler
+local SpawnPrefab = GLOBAL.SpawnPrefab
+local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
 
 local state_notebook = State{
     name = "notebook",
@@ -155,56 +140,7 @@ local state_notebook = State{
 }
 AddStategraphState("wilson", state_notebook)
 AddStategraphState("wilson_client", state_notebook)
-
+------------------------------------------------------------------------
+local ActionHandler = GLOBAL.ActionHandler
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
-
-local function printinvalid(rpcname, player)
-    print(string.format("Invalid %s RPC from (%s) %s", rpcname, player.userid or "", player.name or ""))
-
-    --This event is for MODs that want to handle players sending invalid rpcs
-    TheWorld:PushEvent("invalidrpc", { player = player, rpcname = rpcname })
-end
-
---[[
-All available validation functions in networkclientrpc.lua
-function checkbool(val)
-function checknumber(val)
-function checkuint(val)
-function checkstring(val)
-function checkentity(val)
-optbool = checkbool
-function optnumber(val)
-function optuint(val)
-function optstring(val)
-function optentity(val)
---]]
-local RPC_HANDLERS =
-{
-    NOTEBOOK =
-    {
-        -- Parameters:
-        --  * book:     instance of prefab 'book_notebook'
-        --  * pages:    string of pages table serialized by json
-        SetPages = function(player, book, pages)
-            print("KK-TEST> RPC handler 'SetPages' is invoked.")
-            if not (checkentity(book)
-                and checkstring(pages))
-            then
-                printinvalid("SetPages", player)
-                return false, "Invalid RPC"
-            end
-            if book.components.notebook then
-                return book.components.notebook:SetPages(pages)
-            else
-                return false, "'book.components.notebook' not found!"
-            end
-        end,
-    },
-}
-
-for namespace, nstable in pairs(RPC_HANDLERS) do
-    for name, func in pairs(nstable) do
-        AddModRPCHandler(namespace, name, func)
-    end
-end

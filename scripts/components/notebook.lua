@@ -8,17 +8,6 @@ local function setpages(self, pages)
     end
 end
 
--- Notify client that a change is made to 'self.pages' in 'notebook' COMPONENT
-local function notify(self)
-    print("KK-TEST> Function 'notify' is invoked.")
-    local notebook = self.inst.replica.notebook
-    assert(notebook ~= nil, "KK-TEST> Field 'inst.replica.notebook' not found!")
-    local pages = json.encode(self.pages)
-    print("KK-TEST> Pushing newpages to clients: \"" .. pages .. "\"")
-    notebook.newpages:set_local(pages)
-    notebook.newpages:set(pages)
-end
-
 local Notebook = Class(function(self, inst)
     self.inst = inst
     --print("KK-TEST(notebook)>", dumptable(self.inst))
@@ -33,7 +22,7 @@ local Notebook = Class(function(self, inst)
     --inst:DoTaskInTime(0, RegisterNetListeners)
     
     inst.components.inspectable.getspecialdescription = function(inst, reader)
-        local title = inst.replica.notebook:GetTitle()
+        local title = inst.components.notebook:GetTitle()
         if title and title ~= "" then
             return STRINGS.NOTEBOOK.BOOKTITLELEFT .. title .. STRINGS.NOTEBOOK.BOOKTITLERIGHT
         else
@@ -50,7 +39,6 @@ end
 function Notebook:OnLoad(data, newents)
     print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked.")
     self.pages = data.pages
-    notify(self)
 end
 
 function Notebook:GetDebugString()
@@ -59,7 +47,6 @@ end
 
 function Notebook:Clear()
     self.pages = {}
-    notify(self)
 end
 
 function Notebook:BeginWriting(doer)
@@ -89,18 +76,27 @@ function Notebook:EndWriting(doer)
     self.inst:RemoveEventCallback("onremove", self.onclosepopups, doer)
 end
 
+function Notebook:GetPages()
+    print("KK-TEST> Function Notebook:SetPages() is invoked.")
+    return self.pages
+end
+
+function Notebook:GetPage(page)
+    print("KK-TEST> Function Notebook:GetPage() is invoked.")
+    return self:GetPages()[page] or ""
+end
+
+function Notebook:GetTitle()
+    print("KK-TEST> Function Notebook:GetTitle() is invoked.")
+    return self:GetPage(0)
+end
+
 function Notebook:SetPages(pages)
     print("KK-TEST> Function 'Notebook:SetPages' is invoked.")
     if pages == nil then
         return false, "Nil parameter 'pages'"
     end
-    if type(pages) == "string" then
-        print("KK-TEST> Decoding RPC string: \"" .. pages .. "\"")
-        pages = json.decode(pages)
-        assert(type(pages) == "table", "Error occurred while decoding json string!")
-    elseif type(pages) ~= "table" then
-        return false, "Invalid parameter type 'pages': " .. type(pages)
-    end
+    assert(type(pages) ~= "table", "Parameter 'pages' has invalid type!")
     setpages(self, pages)
     return true
 end
@@ -115,5 +111,29 @@ function Notebook:OnRemoveFromEntity()
 end
 
 Notebook.OnRemoveEntity = Notebook.EndWriting
+
+function Notebook:SetAction(...)
+    print("KK-TEST> Function 'SetAction' is invoked!\t" .. json.encode({...}))
+end
+
+function Notebook:GetBestActionForTarget(...)
+    print("KK-TEST> Function 'GetBestActionForTarget' is invoked!\t" .. json.encode({...}))
+end
+
+function Notebook:CanDoAction(action)
+    return action == ACTIONS.NBREAD
+end
+
+-- @see playeractionpicker.lua
+--      * CollectSceneActions(inst, actions, right)
+--      * CollectUseActions(inst, target, actions, right)
+--      * CollectPointActions(inst, pos, actions, right)
+--      * CollectEquippedActions(inst, target, actions, right)
+--      * CollectInventoryActions(inst, actions, right)
+function Book:CollectInventoryActions(doer, actions)
+    if doer.components.reader then
+        table.insert(actions, ACTIONS.NBREAD)
+    end
+end
 
 return Notebook

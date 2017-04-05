@@ -20,23 +20,12 @@ local function fn(Sim)
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddNetwork()
 
     MakeInventoryPhysics(inst)
     
     inst.AnimState:SetBank("book_notebook")
     inst.AnimState:SetBuild("book_notebook")
     inst.AnimState:PlayAnimation("idle")
-    
-    inst:AddTag("_notebook")
-    
-    inst.entity:SetPristine()
-
-    if not TheWorld.ismastersim then
-        return inst
-    end
-    
-    inst:RemoveTag("_notebook")
     
     inst:AddComponent("inspectable")
     
@@ -53,8 +42,6 @@ local function fn(Sim)
     MakeSmallBurnable(inst, TUNING.MED_BURNTIME)
     MakeSmallPropagator(inst)
     inst.components.burnable:SetOnBurntFn(onburnt)
-
-    MakeHauntableLaunch(inst)
     
     return inst
 end
