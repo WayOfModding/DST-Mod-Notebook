@@ -158,12 +158,14 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages))
     self.marks = {}
     local function GetPage(page)
-        print("KK-TEST> Function Screen:GetPage() is invoked.")
-        return self.pages[page] or ""
+        local res = self.pages[page] or ""
+        print("KK-TEST> Function Screen:GetPage() returns \"" .. res .. "\".")
+        return res
     end
     local function GetTitle()
-        print("KK-TEST> Function Screen:GetTitle() is invoked.")
-        return GetPage(0)
+        local res = GetPage(0)
+        print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
+        return res
     end
     local function OnPageUpdated(page)
         print("KK-TEST> Function Screen:OnPageUpdated() is invoked.")
@@ -217,7 +219,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     
     -- Initialize text area
     self.edit_text:SetString(GetTitle())
-    print("KK-TEST> Text area is initialized.")
+    print("KK-TEST> Text area is initialized: \"" .. self.edit_text:GetString() .. "\"")
     
     -------------------------------------------------------------------------------
     -- Buttons
