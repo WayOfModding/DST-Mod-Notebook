@@ -215,7 +215,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.replica.notebook:GetPages()
-    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):\n" .. tostring(dumptable(self.pages)))
+    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):")
+    dumptable(self.pages)
     self.marks = {}
     
     -- Initialize text area
