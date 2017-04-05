@@ -82,6 +82,13 @@ local function NextPage(self)
     self.edit_text:SetEditing(true)
 end
 
+local function onclose(widget)
+    print("KK-TEST> dumptable(pages):")
+    dumptable(widget.pages)
+    print("KK-TEST> dumptable(marks):")
+    dumptable(widget.marks)
+end
+
 local function onaccept(inst, doer, widget)
     if not widget.isopen then
         return
@@ -332,6 +339,7 @@ end
 
 function WriteableWidget:Close()
     if self.isopen then
+        onclose(self)
         --if self.container ~= nil then
             --if self.owner ~= nil and self.owner.components.playeractionpicker ~= nil then
                 --self.owner.components.playeractionpicker:UnregisterContainer(self.container)
