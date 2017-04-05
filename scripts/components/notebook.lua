@@ -130,7 +130,7 @@ end
 --      * CollectPointActions(inst, pos, actions, right)
 --      * CollectEquippedActions(inst, target, actions, right)
 --      * CollectInventoryActions(inst, actions, right)
-function Book:CollectInventoryActions(doer, actions)
+function Notebook:CollectInventoryActions(doer, actions)
     if doer.components.reader then
         table.insert(actions, ACTIONS.NBREAD)
     end
