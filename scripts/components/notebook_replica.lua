@@ -15,6 +15,7 @@ local function setpages(self, pages)
     print("KK-TEST> Function 'setpages' is invoked.")
     -- Master Sim stores notebook data in 'notebook' COMPONENT instead REPLICA
     for page, text in pairs(pages) do
+        print("KK-TEST> Update page " .. tostring(page) .. "\"" .. text .. "\"")
         self.pages[page] = text
     end
 end
@@ -25,13 +26,15 @@ local Notebook = Class(function(self, inst)
     -- @see netvars.lua
     self.newpages = net_string(inst.GUID, "notebook.newpages", "pagedirty")
     
-    -- Only declare these two fields on client side
+    -- Only declare and track this field on client side
     if not TheWorld.ismastersim then
         self.pages = {}
         
         self.OnPagesDirty = function()
             local newpages = self.newpages:value()
+            print("KK-TEST> Page is dirty: \"" .. newpages .. "\"")
             if newpages == nil or newpages == "" or newpages == "{}" or newpages == "[]" then
+                print("KK-TEST> Invalid 'newpages'!")
                 return false
             end
             newpages = json.decode(newpages)
@@ -73,10 +76,10 @@ function Notebook:GetPages()
     print("KK-TEST> Function Notebook(replica):SetPages() is invoked.")
     local res = nil
     if self.inst.components.notebook ~= nil then
-        --print("KK-TEST> self.inst.components.notebook is found.")
+        print("KK-TEST> self.inst.components.notebook is found.")
         res = self.inst.components.notebook.pages
     else
-        --print("KK-TEST> self.inst.components.notebook is NOT found.")
+        print("KK-TEST> self.inst.components.notebook is NOT found.")
         res = self.pages
     end
     assert(res ~= nil, "KK-TEST> An empty book is retrieved!")
@@ -84,15 +87,18 @@ function Notebook:GetPages()
 end
 
 function Notebook:GetPage(page)
+    print("KK-TEST> Function Notebook(replica):GetPage() is invoked.")
     return self:GetPages()[page] or ""
 end
 
 function Notebook:GetTitle()
+    print("KK-TEST> Function Notebook(replica):GetTitle() is invoked.")
     return self:GetPage(0)
 end
 
 
 function Notebook:BeginWriting(doer)
+    print("KK-TEST> Function Notebook(replica):BeginWriting() is invoked.")
     if self.inst.components.notebook ~= nil then
         return self.inst.components.notebook:BeginWriting(doer)
     elseif doer ~= nil and doer == ThePlayer then
@@ -107,6 +113,7 @@ function Notebook:BeginWriting(doer)
 end
 
 function Notebook:EndWriting(doer)
+    print("KK-TEST> Function Notebook(replica):EndWriting() is invoked.")
     if self.inst.components.notebook ~= nil then
         return self.inst.components.notebook:EndWriting(doer)
     end

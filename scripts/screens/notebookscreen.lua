@@ -5,6 +5,7 @@ local TextEdit = require "widgets/textedit"
 local Menu = require "widgets/menu"
 local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
+local json = require "json"
 
 local function SetPages(book, pages, marks)
     print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
@@ -154,14 +155,18 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.replica.notebook:GetPages()
+    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages))
     self.marks = {}
     local function GetPage(page)
+        print("KK-TEST> Function Screen:GetPage() is invoked.")
         return self.pages[page] or ""
     end
     local function GetTitle()
+        print("KK-TEST> Function Screen:GetTitle() is invoked.")
         return GetPage(0)
     end
     local function OnPageUpdated(page)
+        print("KK-TEST> Function Screen:OnPageUpdated() is invoked.")
         local res = GetPage(page) or ""
         if page == 0 then
             self.edit_text:SetHAlign(ANCHOR_MIDDLE)
@@ -171,18 +176,22 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         self.edit_text:SetString(res)
     end
     local function MarkPage(page)
+        print("KK-TEST> Function Screen:MarkPage() is invoked.")
         local text = self.edit_text:GetString() or ""
         self.pages[page] = text
         self.marks[page] = true
     end
     local function MarkCurrent()
+        print("KK-TEST> Function Screen:MarkCurrent() is invoked.")
         MarkPage(self.page)
     end
     local function UpdatePage(page)
+        print("KK-TEST> Function Screen:UpdatePage() is invoked.")
         self.page = page
         OnPageUpdated(page)
     end
     local function LastPage()
+        print("KK-TEST> Function Screen:LastPage() is invoked.")
         local oldpage = self.page
         local newpage = oldpage - 1
         if newpage < 0 then newpage = 0 end
@@ -192,6 +201,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         self.edit_text:SetEditing(true)
     end
     local function NextPage()
+        print("KK-TEST> Function Screen:NextPage() is invoked.")
         local oldpage = self.page
         local newpage = oldpage + 1
         if newpage > oldpage then
@@ -202,6 +212,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     
     -- Initialize text area
     self.edit_text:SetString(GetTitle())
+    print("KK-TEST> Text area is initialized.")
     
     -------------------------------------------------------------------------------
     -- Buttons

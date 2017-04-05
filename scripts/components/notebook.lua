@@ -10,9 +10,11 @@ end
 
 -- Notify client that a change is made to 'self.pages' in 'notebook' COMPONENT
 local function notify(self)
+    print("KK-TEST> Function 'notify' is invoked.")
     local notebook = self.inst.replica.notebook
     assert(notebook ~= nil, "KK-TEST> Field 'inst.replica.notebook' not found!")
     local pages = json.encode(self.pages)
+    print("KK-TEST> Pushing newpages to clients: \"" .. pages .. "\"")
     notebook.newpages:set_local(pages)
     notebook.newpages:set(pages)
 end
