@@ -142,8 +142,6 @@ local state_notebook = State{
     end,
 }
 AddStategraphState("wilson", state_notebook)
-AddStategraphState("wilson_client", state_notebook)
 ------------------------------------------------------------------------
 local ActionHandler = GLOBAL.ActionHandler
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
-AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))

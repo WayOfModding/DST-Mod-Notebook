@@ -112,14 +112,6 @@ end
 
 Notebook.OnRemoveEntity = Notebook.EndWriting
 
-function Notebook:SetAction(...)
-    print("KK-TEST> Function 'SetAction' is invoked!\t" .. json.encode({...}))
-end
-
-function Notebook:GetBestActionForTarget(...)
-    print("KK-TEST> Function 'GetBestActionForTarget' is invoked!\t" .. json.encode({...}))
-end
-
 function Notebook:CanDoAction(action)
     return action == ACTIONS.NBREAD
 end
