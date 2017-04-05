@@ -136,6 +136,8 @@ local function oncancel(inst, doer, widget)
     widget:Close()
 end
 
+local CONTROL_MENU_MISC_1 = 68
+
 local config =
 {
     prompt = "Notebook",
@@ -144,8 +146,8 @@ local config =
     menuoffset = Vector3(6, -250, 0),
 
     cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", cb = nil, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_MENU_MISC_1 },
+    middlebtn = { text = "Clear", cb = nil, control = CONTROL_MENU_MISC_1 },
+    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_ACCEPT },
     
     lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_ZOOM_IN },
     nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_ZOOM_OUT },
