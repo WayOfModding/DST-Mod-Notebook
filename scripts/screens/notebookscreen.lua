@@ -5,6 +5,7 @@ local TextEdit = require "widgets/textedit"
 local Menu = require "widgets/menu"
 local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
+local json = require "json"
 
 local function SetPages(book, pages, marks)
     print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
@@ -19,6 +20,74 @@ end
 
 local function EndWriting(book, player)
     book.replica.notebook:EndWriting(player)
+end
+
+local function GetPage(self, page)
+    local res = self.pages[page] or ""
+    print("KK-TEST> Function Screen:GetPage(" .. tostring(page) .. ") returns \"" .. res .. "\".")
+    return res
+end
+local function GetTitle(self)
+    local res = GetPage(self, 0)
+    print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
+    return res
+end
+local function OnPageUpdated(self, page)
+    print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
+    local res = GetPage(self, page) or ""
+    if page == 0 then
+        self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+    else
+        self.edit_text:SetHAlign(ANCHOR_LEFT)
+    end
+    self.edit_text:SetString(res)
+end
+local function MarkPage(self, page)
+    print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
+    local text = self.edit_text:GetString() or ""
+    self.pages[page] = text
+    self.marks[page] = true
+end
+local function MarkCurrent(self)
+    print("KK-TEST> Function Screen:MarkCurrent() is invoked.")
+    MarkPage(self, self.page)
+end
+local function UpdatePage(self, page)
+    print("KK-TEST> Function Screen:UpdatePage(" .. tostring(page) .. ") is invoked.")
+    self.page = page
+    OnPageUpdated(self, page)
+end
+local function LastPage(self)
+    print("KK-TEST> Function Screen:LastPage() is invoked.")
+    local oldpage = self.page
+    local newpage = oldpage - 1
+    if newpage < 0 then newpage = 0 end
+    if newpage < oldpage then
+        UpdatePage(self, newpage)
+    end
+    self.edit_text:SetEditing(true)
+end
+local function NextPage(self)
+    print("KK-TEST> Function Screen:NextPage() is invoked.")
+    local oldpage = self.page
+    local newpage = oldpage + 1
+    local limit = #self.pages + 1
+    -- Prevent abusing 'Next Page'
+    if newpage > limit then
+        newpage = limit
+    end
+    if newpage > oldpage then
+        UpdatePage(self, newpage)
+    end
+    self.edit_text:SetEditing(true)
+end
+
+local function onclose(widget)
+    print("KK-TEST> title: " .. tostring(widget.pages[0]))
+    print("KK-TEST> dumptable(pages):")
+    dumptable(widget.pages)
+    print("KK-TEST> dumptable(marks):")
+    dumptable(widget.marks)
 end
 
 local function onaccept(inst, doer, widget)
@@ -116,7 +185,10 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
     self.black:SetTint(0, 0, 0, 0)
-    self.black.OnMouseButton = function() oncancel(self.writeable, self.owner, self) end
+    self.black.OnMouseButton = function()
+        print("KK-TEST> Widget 'black' is busted.")
+        oncancel(self.writeable, self.owner, self)
+    end
 
     self.bganim = self.root:AddChild(UIAnim())
     self.bganim:SetScale(1, 1, 1)
@@ -154,54 +226,15 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.replica.notebook:GetPages()
+    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):")
+    dumptable(self.pages)
     self.marks = {}
-    local function GetPage(page)
-        return self.pages[page] or ""
-    end
-    local function GetTitle()
-        return GetPage(0)
-    end
-    local function OnPageUpdated(page)
-        local res = GetPage(page) or ""
-        if page == 0 then
-            self.edit_text:SetHAlign(ANCHOR_MIDDLE)
-        else
-            self.edit_text:SetHAlign(ANCHOR_LEFT)
-        end
-        self.edit_text:SetString(res)
-    end
-    local function MarkPage(page)
-        local text = self.edit_text:GetString() or ""
-        self.pages[page] = text
-        self.marks[page] = true
-    end
-    local function MarkCurrent()
-        MarkPage(self.page)
-    end
-    local function UpdatePage(page)
-        self.page = page
-        OnPageUpdated(page)
-    end
-    local function LastPage()
-        local oldpage = self.page
-        local newpage = oldpage - 1
-        if newpage < 0 then newpage = 0 end
-        if newpage < oldpage then
-            UpdatePage(newpage)
-        end
-        self.edit_text:SetEditing(true)
-    end
-    local function NextPage()
-        local oldpage = self.page
-        local newpage = oldpage + 1
-        if newpage > oldpage then
-            UpdatePage(newpage)
-        end
-        self.edit_text:SetEditing(true)
-    end
     
     -- Initialize text area
-    self.edit_text:SetString(GetTitle())
+    local title = GetTitle(self)
+    self.edit_text:SetString(title)
+    self.edit_text:SetFocus()
+    print("KK-TEST> Text area is initialized: \"" .. title .. "\", \"" .. self.edit_text:GetString() .. "\"")
     
     -------------------------------------------------------------------------------
     -- Buttons
@@ -215,7 +248,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Clear
     table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
         print("KK-TEST> Button 'Clear' is pressed.")
-        MarkCurrent()
+        MarkCurrent(self)
         onmiddle(self.writeable, self.owner, self)
     end, control = config.middlebtn.control })
     -- Accept
@@ -226,12 +259,12 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Last Page
     table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
         print("KK-TEST> Button 'Last Page' is pressed.")
-        LastPage()
+        LastPage(self)
     end, control = config.lastpagebtn.control })
     -- Next Page
     table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
         print("KK-TEST> Button 'Next Page' is pressed.")
-        NextPage()
+        NextPage(self)
     end, control = config.nextpagebtn.control })
 
     for i, v in ipairs(self.buttons) do
@@ -258,7 +291,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:OnControl(CONTROL_ACCEPT, false)
     self.edit_text.OnTextInputted = function()
         --print("KK-TEST> OnTextInputted: "..self:GetText())
-        MarkCurrent()
+        MarkCurrent(self)
     end
     self.edit_text.OnTextEntered = function()
         self:OnControl(CONTROL_ACCEPT, false)
@@ -310,6 +343,7 @@ end
 
 function WriteableWidget:Close()
     if self.isopen then
+        onclose(self)
         --if self.container ~= nil then
             --if self.owner ~= nil and self.owner.components.playeractionpicker ~= nil then
                 --self.owner.components.playeractionpicker:UnregisterContainer(self.container)
