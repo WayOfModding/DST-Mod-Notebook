@@ -204,6 +204,11 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         print("KK-TEST> Function Screen:NextPage() is invoked.")
         local oldpage = self.page
         local newpage = oldpage + 1
+        local limit = #self.pages + 1
+        -- Prevent abusing 'Next Page'
+        if newpage > limit then
+            newpage = limit
+        end
         if newpage > oldpage then
             UpdatePage(newpage)
         end
