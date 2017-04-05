@@ -46,11 +46,10 @@ AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.
 AddPlayerPostInit(function(inst)
     -- Global variable 'TheWorld' is not yet initialized before getting into the game,
     -- caching it would cause a null pointer exception.
-    if GLOBAL.TheWorld.ismastersim then
-        -- Components should only be added on server side!
-        -- If a component is added on client side will cause duplicate replica exception!
-        inst:AddComponent("nbreader")
-    end
+    
+    -- Replicable components should only be added on server side!
+    -- If a component is added on client side will cause duplicate replica exception!
+    inst:AddComponent("nbreader")
 end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
