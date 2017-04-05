@@ -24,7 +24,7 @@ end
 
 local function GetPage(self, page)
     local res = self.pages[page] or ""
-    print("KK-TEST> Function Screen:GetPage() returns \"" .. res .. "\".")
+    print("KK-TEST> Function Screen:GetPage(" .. tostring(page) .. ") returns \"" .. res .. "\".")
     return res
 end
 local function GetTitle(self)
@@ -33,7 +33,7 @@ local function GetTitle(self)
     return res
 end
 local function OnPageUpdated(self, page)
-    print("KK-TEST> Function Screen:OnPageUpdated() is invoked.")
+    print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
     local res = GetPage(self, page) or ""
     if page == 0 then
         self.edit_text:SetHAlign(ANCHOR_MIDDLE)
@@ -43,7 +43,7 @@ local function OnPageUpdated(self, page)
     self.edit_text:SetString(res)
 end
 local function MarkPage(self, page)
-    print("KK-TEST> Function Screen:MarkPage() is invoked.")
+    print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
     local text = self.edit_text:GetString() or ""
     self.pages[page] = text
     self.marks[page] = true
@@ -53,7 +53,7 @@ local function MarkCurrent(self)
     MarkPage(self, self.page)
 end
 local function UpdatePage(self, page)
-    print("KK-TEST> Function Screen:UpdatePage() is invoked.")
+    print("KK-TEST> Function Screen:UpdatePage(" .. tostring(page) .. ") is invoked.")
     self.page = page
     OnPageUpdated(self, page)
 end
@@ -83,6 +83,7 @@ local function NextPage(self)
 end
 
 local function onclose(widget)
+    print("KK-TEST> title: " .. tostring(widget.pages[0]))
     print("KK-TEST> dumptable(pages):")
     dumptable(widget.pages)
     print("KK-TEST> dumptable(marks):")
@@ -184,7 +185,10 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
     self.black:SetTint(0, 0, 0, 0)
-    self.black.OnMouseButton = function() oncancel(self.writeable, self.owner, self) end
+    self.black.OnMouseButton = function()
+        print("KK-TEST> Widget 'black' is busted.")
+        oncancel(self.writeable, self.owner, self)
+    end
 
     self.bganim = self.root:AddChild(UIAnim())
     self.bganim:SetScale(1, 1, 1)
