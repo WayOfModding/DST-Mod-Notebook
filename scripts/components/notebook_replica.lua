@@ -38,6 +38,8 @@ local Notebook = Class(function(self, inst)
             assert(type(newpages) == "table", "KK-TEST> Invalid 'newpages' type: " .. type(newpages))
             -- update local data structure
             setpages(self, newpages)
+            -- clean up 'self.newpages'
+            self.newpages:set_local("")
             return true
         end
         self.OnRemoveFromEntity = function(self)
