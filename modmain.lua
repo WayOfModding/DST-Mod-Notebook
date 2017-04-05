@@ -86,53 +86,60 @@ local state_notebook = State{
     -- get code from State{"book"} from SGwilson.lua
     onenter = function(inst)
         inst.components.locomotor:Stop()
-        inst.AnimState:PlayAnimation("action_uniqueitem_pre")
-        inst.AnimState:PushAnimation("book", false)
+        inst.AnimState:PlayAnimation("book")
+        inst.AnimState:OverrideSymbol("book_open", "player_actions_uniqueitem", "book_open")
+        inst.AnimState:OverrideSymbol("book_closed", "player_actions_uniqueitem", "book_closed")
+        inst.AnimState:OverrideSymbol("book_open_pages", "player_actions_uniqueitem", "book_open_pages")
         inst.AnimState:Show("ARM_normal")
-        if inst.components.inventory then
-            inst.components.inventory:ReturnActiveActionItem(inst.bufferedaction ~= nil and (inst.bufferedaction.target or inst.bufferedaction.invobject) or nil)
+        if inst.components.inventory.activeitem and inst.components.inventory.activeitem.components.book then
+            inst.components.inventory:ReturnActiveItem()
         end
+        inst.SoundEmitter:PlaySound("dontstarve/common/use_book")
     end,
-
-    timeline =
+    
+    timeline=
     {
         TimeEvent(0, function(inst)
-            local fxtoplay = inst.components.rider ~= nil and inst.components.rider:IsRiding() and "book_fx_mount" or "book_fx"
+            local fxtoplay = "book_fx"
+            if inst.prefab == "waxwell" then
+                fxtoplay = "waxwell_book_fx" 
+            end       
             local fx = SpawnPrefab(fxtoplay)
-            fx.entity:SetParent(inst.entity)
-            fx.Transform:SetPosition(0, 0.2, 0)
+            local pos = inst:GetPosition()
+            fx.Transform:SetRotation(inst.Transform:GetRotation())
+            fx.Transform:SetPosition( pos.x, pos.y - .2, pos.z ) 
             inst.sg.statemem.book_fx = fx
         end),
 
-        TimeEvent(28 * FRAMES, function(inst)
-            inst.SoundEmitter:PlaySound("dontstarve/common/use_book_light")
+        TimeEvent(28*FRAMES, function(inst) 
+            if inst.prefab == "waxwell" then
+                inst.SoundEmitter:PlaySound("dontstarve/common/use_book_dark")
+            else
+                inst.SoundEmitter:PlaySound("dontstarve/common/use_book_light")
+            end
         end),
 
-        TimeEvent(54 * FRAMES, function(inst)
-            inst.SoundEmitter:PlaySound("dontstarve/common/use_book_close")
-        end),
-
-        TimeEvent(58 * FRAMES, function(inst)
+        TimeEvent(58*FRAMES, function(inst)
             inst.SoundEmitter:PlaySound("dontstarve/common/book_spell")
             inst:PerformBufferedAction()
             inst.sg.statemem.book_fx = nil
         end),
-    },
 
-    events =
-    {
-        EventHandler("animqueueover", function(inst)
-            if inst.AnimState:AnimDone() then
-                inst.sg:GoToState("idle")
-            end
+        TimeEvent(62*FRAMES, function(inst) 
+            inst.SoundEmitter:PlaySound("dontstarve/common/use_book_close")
         end),
     },
-
+    
+    events=
+    {
+        EventHandler("animover", function(inst)
+            inst.sg:GoToState("idle")
+        end),
+    },
+    
     onexit = function(inst)
-        if inst.components.inventory
-            and inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS)
-        then
-            inst.AnimState:Show("ARM_carry")
+        if inst.components.inventory:GetEquippedItem(EQUIPSLOTS.HANDS) then
+            inst.AnimState:Show("ARM_carry") 
             inst.AnimState:Hide("ARM_normal")
         end
         if inst.sg.statemem.book_fx then
