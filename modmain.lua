@@ -43,33 +43,20 @@ action_nbread.str   = "Read"
 action_nbread.fn    = function(act)
     print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
+    local result = false
+    local reason = nil
     if targ == nil then
-        local reason = "Action.Read: 'targ' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    if targ.components.notebook == nil then
-        local reason = "Action.Read: 'targ.components.notebook' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    if act.doer == nil then
-        local reason = "Action.Read: 'act.doer' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    if act.doer.components.nbreader == nil then
-        local reason = "Action.Read: 'act.doer.components.nbreader' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    local result, reason = act.doer.components.nbreader:Read(targ)
-    if result then
-        return true
+        reason = "Action.Read: 'targ' is nil"
+    elseif targ.components.notebook == nil then
+        reason = "Action.Read: 'targ.components.notebook' is nil"
+    elseif act.doer == nil then
+        reason = "Action.Read: 'act.doer' is nil"
+    elseif act.doer.components.nbreader == nil then
+        reason = "Action.Read: 'act.doer.components.nbreader' is nil"
     else
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
+        result, reason = act.doer.components.nbreader:Read(targ)
     end
+    assert(result == true, reason or "Unknown")
 end
 AddAction(action_nbread)
 ------------------------------------------------------------------------

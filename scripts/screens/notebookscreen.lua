@@ -8,7 +8,10 @@ local ImageButton = require "widgets/imagebutton"
 local json = require "json"
 
 -- Constants
+local CONTROL_MENU_MISC_1   = 68
 local TITLE_LENGTH_LIMIT    = 16
+local MAX_HUD_SCALE         = 1.25
+local MAX_WRITEABLE_LENGTH  = 200
 
 local function SetPages(book, pages, marks)
     --print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
@@ -89,14 +92,6 @@ local function NextPage(self)
     self.edit_text:SetEditing(true)
 end
 
-local function onclose(widget)
-    print("KK-TEST> title: " .. tostring(widget.pages[0]))
-    print("KK-TEST> dumptable(pages):")
-    dumptable(widget.pages)
-    print("KK-TEST> dumptable(marks):")
-    dumptable(widget.marks)
-end
-
 local function onaccept(inst, doer, widget)
     if not widget.isopen then
         return
@@ -136,8 +131,6 @@ local function oncancel(inst, doer, widget)
     widget:Close()
 end
 
-local CONTROL_MENU_MISC_1 = 68
-
 local config =
 {
     prompt = "Notebook",
@@ -172,16 +165,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 
     self.scalingroot = self:AddChild(Widget("writeablewidgetscalingroot"))
     self.scalingroot:SetScale(TheFrontEnd:GetHUDScale())
-    self.inst:ListenForEvent("continuefrompause", function()
-        if self.isopen then
-            self.scalingroot:SetScale(TheFrontEnd:GetHUDScale())
-        end
-    end, TheWorld)
-    self.inst:ListenForEvent("refreshhudsize", function(hud, scale)
-        if self.isopen then
-            self.scalingroot:SetScale(scale)
-        end
-    end, owner.HUD.inst)
 
     self.root = self.scalingroot:AddChild(Widget("writeablewidgetroot"))
     self.root:SetScale(.6, .6, .6)
@@ -192,6 +175,13 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.black:SetHRegPoint(ANCHOR_MIDDLE)
     self.black:SetVAnchor(ANCHOR_MIDDLE)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
+    --[[
+    SCALEMODE_NONE = 0
+    SCALEMODE_FILLSCREEN = 1
+    SCALEMODE_PROPORTIONAL = 2
+    SCALEMODE_FIXEDPROPORTIONAL = 3
+    SCALEMODE_FIXEDSCREEN_NONDYNAMIC = 4
+    --]]
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
     self.black:SetTint(0, 0, 0, 0)
     self.black.OnMouseButton = function()
@@ -353,7 +343,6 @@ end
 
 function WriteableWidget:Close()
     if self.isopen then
-        --onclose(self)
         --if self.container ~= nil then
             --if self.owner ~= nil and self.owner.components.playeractionpicker ~= nil then
                 --self.owner.components.playeractionpicker:UnregisterContainer(self.container)

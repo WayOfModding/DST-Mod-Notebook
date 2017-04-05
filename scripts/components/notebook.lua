@@ -58,7 +58,7 @@ function Notebook:BeginWriting(doer)
     self.inst:ListenForEvent("onremove", self.onclosepopups, doer)
     
     -- Make pop-up window
-    if doer ~= nil and doer == ThePlayer then
+    if doer ~= nil then
         if doer.HUD == nil then
             return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
         else
@@ -103,9 +103,7 @@ end
 
 -- Invoked when this component is removed from entity
 function Notebook:OnRemoveFromEntity()
-    self:EndWriting(self.inst.components.inventoryitem
-        and self.inst.components.inventoryitem.owner
-        or ThePlayer)
+    self:EndWriting(self.inst.components.inventoryitem and self.inst.components.inventoryitem.owner)
     self.inst:RemoveTag("notebook")
     self:Clear()
 end
