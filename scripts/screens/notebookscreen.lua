@@ -7,8 +7,11 @@ local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
 local json = require "json"
 
+-- Constants
+local TITLE_LENGTH_LIMIT    = 16
+
 local function SetPages(book, pages, marks)
-    print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
+    --print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
     
     -- Filter pages that ain't modified
     for page, mark in pairs(marks) do
@@ -24,41 +27,45 @@ end
 
 local function GetPage(self, page)
     local res = self.pages[page] or ""
-    print("KK-TEST> Function Screen:GetPage(" .. tostring(page) .. ") returns \"" .. res .. "\".")
+    --print("KK-TEST> Function Screen:GetPage(" .. tostring(page) .. ") returns \"" .. res .. "\".")
     return res
 end
 local function GetTitle(self)
     local res = GetPage(self, 0)
-    print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
+    --print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
     return res
 end
 local function OnPageUpdated(self, page)
-    print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
+    --print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
     local res = GetPage(self, page) or ""
     if page == 0 then
         self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+        self.edit_text:SetVAlign(ANCHOR_MIDDLE)
+        self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
     else
         self.edit_text:SetHAlign(ANCHOR_LEFT)
+        self.edit_text:SetVAlign(ANCHOR_TOP)
+        self.edit_text:SetTextLengthLimit(MAX_WRITEABLE_LENGTH)
     end
     self.edit_text:SetString(res)
 end
 local function MarkPage(self, page)
-    print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
+    --print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
     local text = self.edit_text:GetString() or ""
     self.pages[page] = text
     self.marks[page] = true
 end
 local function MarkCurrent(self)
-    print("KK-TEST> Function Screen:MarkCurrent() is invoked.")
+    --print("KK-TEST> Function Screen:MarkCurrent() is invoked.")
     MarkPage(self, self.page)
 end
 local function UpdatePage(self, page)
-    print("KK-TEST> Function Screen:UpdatePage(" .. tostring(page) .. ") is invoked.")
+    --print("KK-TEST> Function Screen:UpdatePage(" .. tostring(page) .. ") is invoked.")
     self.page = page
     OnPageUpdated(self, page)
 end
 local function LastPage(self)
-    print("KK-TEST> Function Screen:LastPage() is invoked.")
+    --print("KK-TEST> Function Screen:LastPage() is invoked.")
     local oldpage = self.page
     local newpage = oldpage - 1
     if newpage < 0 then newpage = 0 end
@@ -68,7 +75,7 @@ local function LastPage(self)
     self.edit_text:SetEditing(true)
 end
 local function NextPage(self)
-    print("KK-TEST> Function Screen:NextPage() is invoked.")
+    --print("KK-TEST> Function Screen:NextPage() is invoked.")
     local oldpage = self.page
     local newpage = oldpage + 1
     local limit = #self.pages + 1
@@ -138,7 +145,7 @@ local config =
 
     cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
     middlebtn = { text = "Clear", cb = nil, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_ACCEPT },
+    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_MENU_MISC_1 },
     
     lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_ZOOM_IN },
     nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_ZOOM_OUT },
@@ -209,12 +216,12 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     self.edit_text:SetForceEdit(true)
-    self.edit_text:SetPosition(0, 200, 0)
-    self.edit_text:SetRegionSize(800, 60)
+    self.edit_text:SetPosition(0, 0, 0)
+    self.edit_text:SetRegionSize(800, 480)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
-    self.edit_text:SetVAlign(ANCHOR_TOP)
+    self.edit_text:SetVAlign(ANCHOR_MIDDLE)
     --self.edit_text:SetFocusedImage(self.edit_text_bg, "images/textboxes.xml", "textbox_long_over.tex", "textbox_long.tex")
-    self.edit_text:SetTextLengthLimit(32)
+    self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
     self.edit_text:EnableWordWrap(true)
     self.edit_text:EnableWhitespaceWrap(true)
     self.edit_text:EnableRegionSizeLimit(true)
@@ -248,8 +255,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Clear
     table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
         print("KK-TEST> Button 'Clear' is pressed.")
-        MarkCurrent(self)
         onmiddle(self.writeable, self.owner, self)
+        MarkCurrent(self)
     end, control = config.middlebtn.control })
     -- Accept
     table.insert(self.buttons, { text = config.acceptbtn.text, cb = function()
@@ -343,7 +350,7 @@ end
 
 function WriteableWidget:Close()
     if self.isopen then
-        onclose(self)
+        --onclose(self)
         --if self.container ~= nil then
             --if self.owner ~= nil and self.owner.components.playeractionpicker ~= nil then
                 --self.owner.components.playeractionpicker:UnregisterContainer(self.container)
