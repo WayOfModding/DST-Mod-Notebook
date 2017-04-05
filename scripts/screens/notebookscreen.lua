@@ -218,8 +218,10 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end
     
     -- Initialize text area
-    self.edit_text:SetString(GetTitle())
-    print("KK-TEST> Text area is initialized: \"" .. self.edit_text:GetString() .. "\"")
+    local title = GetTitle()
+    self.edit_text:SetString(title)
+    self.edit_text:SetFocus()
+    print("KK-TEST> Text area is initialized: \"" .. title .. "\", \"" .. self.edit_text:GetString() .. "\"")
     
     -------------------------------------------------------------------------------
     -- Buttons
