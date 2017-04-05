@@ -226,6 +226,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:EnableWhitespaceWrap(true)
     self.edit_text:EnableRegionSizeLimit(true)
     self.edit_text:EnableScrollEditWindow(false)
+    self.edit_text:SetAllowNewline(true)
 
     -------------------------------------------------------------------------------
     -- Pages
