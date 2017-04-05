@@ -12,6 +12,7 @@ local CONTROL_MENU_MISC_1   = 68
 local TITLE_LENGTH_LIMIT    = 16
 local MAX_HUD_SCALE         = 1.25
 local MAX_WRITEABLE_LENGTH  = 200
+local CODEFONT              = "ptmono"
 
 local function SetPages(book, pages, marks)
     --print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
