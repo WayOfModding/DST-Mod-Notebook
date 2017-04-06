@@ -61,8 +61,10 @@ function Notebook:BeginWriting(doer)
     if doer ~= nil then
         if doer.HUD == nil then
             return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
-        else
+        elseif makescreen ~= nil and type(makescreen) == "function" then
             return makescreen(self.inst, doer)
+        else
+            return false, "NotebookScreen not found!"
         end
     else
         return false, "KK-TEST> Invalid doer!"

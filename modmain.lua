@@ -56,7 +56,7 @@ action_nbread.fn    = function(act)
     else
         result, reason = act.doer.components.nbreader:Read(targ)
     end
-    assert(result == true, reason or "Unknown")
+    return result, reason
 end
 AddAction(action_nbread)
 ------------------------------------------------------------------------
