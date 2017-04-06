@@ -62,7 +62,11 @@ function Notebook:BeginWriting(doer)
         if doer.HUD == nil then
             return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
         elseif makescreen ~= nil and type(makescreen) == "function" then
-            return makescreen(self.inst, doer)
+            local function trymakescreen()
+                makescreen(self.inst, doer)
+            end
+            local status, result, reason = xpcall(trymakescreen, debug.traceback)
+            return status and result, reason
         else
             return false, "NotebookScreen not found!"
         end

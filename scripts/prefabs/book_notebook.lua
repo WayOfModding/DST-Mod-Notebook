@@ -2,8 +2,6 @@ local assets =
 {
     Asset("ANIM", "anim/book_notebook.zip"),
     Asset("ATLAS", "images/book_notebook.xml"),
-    Asset("IMAGE", "images/scoreboard.tex"),
-    Asset("ATLAS", "images/scoreboard.xml"),
 }
 
 local prefabs =

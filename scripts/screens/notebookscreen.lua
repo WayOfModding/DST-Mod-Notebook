@@ -51,7 +51,7 @@ local function OnPageUpdated(self, page)
         self.edit_text:SetVAlign(ANCHOR_TOP)
         self.edit_text:SetTextLengthLimit(MAX_WRITEABLE_LENGTH)
     end
-    self.edit_text:SetString(res)
+    self:OverrideText(res)
 end
 local function MarkPage(self, page)
     --print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
@@ -100,10 +100,6 @@ local function onaccept(inst, doer, widget)
     
     SetPages(inst, widget.pages, widget.marks)
 
-    if widget.config.acceptbtn.cb ~= nil then
-        widget.config.acceptbtn.cb(inst, doer, widget)
-    end
-
     widget.edit_text:SetEditing(false)
     EndWriting(inst, doer)
     widget:Close()
@@ -114,7 +110,7 @@ local function onmiddle(inst, doer, widget)
         return
     end
     
-    widget.edit_text:SetString("")
+    widget:OverrideText("")
     widget.edit_text:SetEditing(true)
 end
 
@@ -124,31 +120,27 @@ local function oncancel(inst, doer, widget)
     end
     
     EndWriting(inst, doer)
-
-    if widget.config.cancelbtn.cb ~= nil then
-        widget.config.cancelbtn.cb(inst, doer, widget)
-    end
-
+    
     widget:Close()
 end
 
 local config =
 {
     prompt = "Notebook",
-    animbank = "ui_board_5x3",
-    animbuild = "ui_board_5x3",
+    animbank = nil,
+    animbuild = nil,
     menuoffset = Vector3(6, -250, 0),
 
-    cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", cb = nil, control = CONTROL_MENU_MISC_1 },
-    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_ACCEPT },
+    cancelbtn = { text = "Cancel", control = CONTROL_CANCEL },
+    middlebtn = { text = "Clear", control = CONTROL_MENU_MISC_1 },
+    acceptbtn = { text = "Accept", control = CONTROL_ACCEPT },
     
-    lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_ZOOM_IN },
-    nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_ZOOM_OUT },
+    lastpagebtn = { text = "Last Page", control = CONTROL_ZOOM_IN },
+    nextpagebtn = { text = "Next Page", control = CONTROL_ZOOM_OUT },
 }
 
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
-    Screen._ctor(self, "SignWriter")
+    Screen._ctor(self, "NotebookScreen")
 
     self.owner = owner
     self.writeable = writeable
@@ -194,13 +186,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.bganim:SetScale(1, 1, 1)
     -- Frame
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
-    self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
-    self.bganim:SetScale(1, 1, 1)
-
-    --self.title = self.root:AddChild(Text(BUTTONFONT, 50))
-    --self.title:SetPosition(0, 70, 0)
-    --self.title:SetColour(0, 0, 0, 1)
-    --self.title:SetString(self.config.prompt)
+    self.bgimage = self.root:AddChild(Image("images/globalpanels.xml", "panel_long.tex"))
 
     --self.edit_text_bg = self.root:AddChild(Image("images/textboxes.xml", "textbox_long.tex"))
     --self.edit_text_bg:SetPosition(0, 5, 0)
@@ -227,15 +213,12 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.components.notebook:GetPages()
-    print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):")
-    dumptable(self.pages)
+    --print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):")
+    --dumptable(self.pages)
     self.marks = {}
     
     -- Initialize text area
-    local title = GetTitle(self)
-    self.edit_text:SetString(title)
-    self.edit_text:SetFocus()
-    print("KK-TEST> Text area is initialized: \"" .. title .. "\", \"" .. self.edit_text:GetString() .. "\"")
+    self:OverrideText(GetTitle(self))
     
     -------------------------------------------------------------------------------
     -- Buttons
@@ -313,13 +296,9 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     if config.animbuild ~= nil then
         self.bganim:GetAnimState():SetBuild(config.animbuild)
     end
-
-    if config.pos ~= nil then
-        self.root:SetPosition(config.pos)
-    else
-        self.root:SetPosition(0, 150, 0)
-    end
-
+    
+    self.root:SetPosition(0, 150, 0)
+    
     --if config.buttoninfo ~= nil then
         --if doer ~= nil and doer.components.playeractionpicker ~= nil then
             --doer.components.playeractionpicker:RegisterContainer(container)
@@ -358,12 +337,7 @@ function WriteableWidget:Close()
             self.bganim:GetAnimState():PlayAnimation("close")
         end
 
-        self.black:Kill()
-        --self.title:Kill()
-        self.edit_text:SetEditing(false)
-        self.edit_text:Kill()
-        --self.edit_text_bg:Kill()
-        self.menu:Kill()
+        self:KillAllChildren()
 
         self.isopen = false
 
@@ -378,10 +352,6 @@ end
 
 function WriteableWidget:GetText()
     return self.edit_text:GetString()
-end
-
-function WriteableWidget:SetValidChars(chars)
-    self.edit_text:SetCharacterFilter(chars)
 end
 
 function WriteableWidget:OnControl(control, down)
@@ -432,5 +402,4 @@ local function MakeWriteableWidget(inst, doer)
     end
 end
 
---return MakeWriteableWidget
-return nil
+return nil, MakeWriteableWidget
