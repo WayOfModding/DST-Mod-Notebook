@@ -39,13 +39,12 @@ local function fn(Sim)
     inst:RemoveTag("_notebook")
     
     inst:AddComponent("inspectable")
+    inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
     
     -- Writeable book --
     inst:AddComponent("notebook")
     --------------------
-
-    inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
     
     -- Books are flammable
     inst:AddComponent("fuel")
