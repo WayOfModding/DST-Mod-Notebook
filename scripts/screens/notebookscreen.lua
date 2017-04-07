@@ -9,6 +9,7 @@ local json = require "json"
 
 -- Constants
 local TITLE_LENGTH_LIMIT    = 16
+local TEXT_LENGTH_LIMIT     = 256
 
 local function SetPages(book, pages, marks)
     --print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
@@ -45,7 +46,7 @@ local function OnPageUpdated(self, page)
     else
         self.edit_text:SetHAlign(ANCHOR_LEFT)
         self.edit_text:SetVAlign(ANCHOR_TOP)
-        self.edit_text:SetTextLengthLimit(MAX_WRITEABLE_LENGTH)
+        self.edit_text:SetTextLengthLimit(TEXT_LENGTH_LIMIT)
     end
     self.edit_text:SetString(res)
 end
