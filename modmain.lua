@@ -55,28 +55,24 @@ end)
 local action_nbread = AddAction("NBREAD", "Read", function(act)
     print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
+    local result = false
+    local reason = nil
     if targ == nil then
-        local reason = "Action.Read: 'targ' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    if act.doer == nil then
-        local reason = "Action.Read: 'act.doer' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    if act.doer.components.nbreader == nil then
-        local reason = "Action.Read: 'act.doer.components.nbreader' is nil"
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
-    end
-    local result, reason = act.doer.components.nbreader:Read(targ)
-    if result then
-        return true
+        reason = "Action.Read: 'targ' is nil"
+    elseif targ.replica.notebook == nil then
+        reason = "Action.Read: 'targ.replica.notebook' is nil"
+    elseif act.doer == nil then
+        reason = "Action.Read: 'act.doer' is nil"
+    elseif act.doer.components.nbreader == nil then
+        reason = "Action.Read: 'act.doer.components.nbreader' is nil"
     else
-        print("KK-TEST> Action failed: " .. reason)
-        return false, reason
+        result, reason = act.doer.components.nbreader:Read(targ)
     end
+    
+    if not result then
+        print("KK-TEST> Action failed: " .. reason)
+    end
+    return result, reason
 end)
 action_nbread.mount_valid = true
 
@@ -194,11 +190,8 @@ local RPC_HANDLERS =
                 printinvalid("SetPages", player)
                 return false, "Invalid RPC"
             end
-            if book.components.notebook then
-                return book.components.notebook:SetPages(pages)
-            else
-                return false, "'book.components.notebook' not found!"
-            end
+            assert(book.components.notebook ~= nil, "KK-TEST> 'book.components.notebook' not found on server side!")
+            return book.components.notebook:SetPages(pages)
         end,
     },
 }
