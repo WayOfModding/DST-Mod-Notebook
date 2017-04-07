@@ -1,6 +1,14 @@
 local makescreen = require("screens/notebookscreen")
 local json = require("json")
 
+local function getside()
+    if TheWorld and TheWorld.ismastersim then
+        return " on server side"
+    else
+        return " on client side"
+    end
+end
+
 local function SendRPC(namespace, name, ...)
     print("KK-TEST> SendRPC:", ...)
     local id_table =
@@ -59,7 +67,7 @@ function Notebook:GetDebugString()
 end
 
 function Notebook:SetPages(pages)
-    print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked.")
+    print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked" .. getside() .. ".")
     if self.inst.components.notebook ~= nil then
         -- Host client
         self.inst.components.notebook:SetPages(pages)
@@ -74,7 +82,7 @@ function Notebook:SetPages(pages)
 end
 
 function Notebook:GetPages()
-    print("KK-TEST> Function Notebook(replica):SetPages() is invoked.")
+    print("KK-TEST> Function Notebook(replica):SetPages() is invoked" .. getside() .. ".")
     local res = nil
     if self.inst.components.notebook ~= nil then
         print("KK-TEST> self.inst.components.notebook is found.")
@@ -88,33 +96,37 @@ function Notebook:GetPages()
 end
 
 function Notebook:GetPage(page)
-    print("KK-TEST> Function Notebook(replica):GetPage() is invoked.")
     return self:GetPages()[page] or ""
 end
 
 function Notebook:GetTitle()
-    print("KK-TEST> Function Notebook(replica):GetTitle() is invoked.")
+    print("KK-TEST> Function Notebook(replica):GetTitle() is invoked" .. getside() .. ".")
     return self:GetPage(0)
 end
 
-
 function Notebook:BeginWriting(doer)
-    print("KK-TEST> Function Notebook(replica):BeginWriting() is invoked.")
+    print("KK-TEST> Function Notebook(replica):BeginWriting() is invoked" .. getside() .. ".")
+    --[[
+    Function 'BeginWriting' is invoked on server side
+    --]]
     if self.inst.components.notebook ~= nil then
         return self.inst.components.notebook:BeginWriting(doer)
-    elseif doer ~= nil and doer == ThePlayer then
-        if doer.HUD == nil then
-            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
-        else
-            return makescreen(self.inst, doer)
-        end
+    --[[
+    Function 'BeginWriting' is invoked on client side
+    --]]
+    elseif doer == nil then
+        return false, "KK-TEST> 'doer' is nil!"
+    elseif doer ~= ThePlayer then
+        return false, "KK-TEST> Invalid doer! Expecting (" .. tostring(ThePlayer) .. "), but given (" .. tostring(doer) .. ")"
+    elseif doer.HUD == nil then
+        return false, "KK-TEST> Notebook:BeginWriting: 'doer.HUD' is nil"
     else
-        return false, "KK-TEST> Invalid doer!"
+        return makescreen(self.inst, doer)
     end
 end
 
 function Notebook:EndWriting(doer)
-    print("KK-TEST> Function Notebook(replica):EndWriting() is invoked.")
+    print("KK-TEST> Function Notebook(replica):EndWriting() is invoked" .. getside() .. ".")
     if self.inst.components.notebook ~= nil then
         return self.inst.components.notebook:EndWriting(doer)
     end
