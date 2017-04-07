@@ -1,33 +1,22 @@
 local require = GLOBAL.require
-local STRINGS = GLOBAL.STRINGS
-local Ingredient = GLOBAL.Ingredient
-local RECIPETABS = GLOBAL.RECIPETABS
-local STRINGS = GLOBAL.STRINGS
-local TECH = GLOBAL.TECH
-local ACTIONS = GLOBAL.ACTIONS
-local State = GLOBAL.State
-local FRAMES = GLOBAL.FRAMES
-local TimeEvent = GLOBAL.TimeEvent
-local EventHandler = GLOBAL.EventHandler
-local ActionHandler = GLOBAL.ActionHandler
-local SpawnPrefab = GLOBAL.SpawnPrefab
-local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
-local checkentity = GLOBAL.checkentity
-local checkstring = GLOBAL.checkstring
 local assert = GLOBAL.assert
 
 local DEBUG = true
-
+------------------------------------------------------------------
 PrefabFiles =
 {
     "book_notebook",
 }
-
+Assets =
+{
+}
+------------------------------------------------------------------
+local STRINGS       = GLOBAL.STRINGS
 -- Strings
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.BOOK_NOTEBOOK = "Should I take down some notes?"
-STRINGS.NOTEBOOK =
+STRINGS.NOTEBOOK    =
 {
     BOOKTITLELEFT   = "\"",
     BOOKTITLERIGHT  = "\"",
@@ -38,16 +27,12 @@ STRINGS.NOTEBOOK =
     BUTTON_NEXTPAGE = "Next Page",
 }
 
---[[
-Ingredient:
-    2x      papyrus
-Tabs:
-    Tools
-Requirement:
-    None
---]]
+local Ingredient    = GLOBAL.Ingredient
+local RECIPETABS    = GLOBAL.RECIPETABS
+local TECH          = GLOBAL.TECH
 AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
-
+------------------------------------------------------------------
+local SpawnPrefab = GLOBAL.SpawnPrefab
 AddPlayerPostInit(function(inst)
     -- Global variable 'TheWorld' is not yet initialized before getting into the game,
     -- caching it would cause a null pointer exception.
@@ -62,7 +47,8 @@ AddPlayerPostInit(function(inst)
         inst.components.inventory:GiveItem(item)
     end
 end)
-
+------------------------------------------------------------------
+local ACTIONS = GLOBAL.ACTIONS
 local action_nbread = AddAction("NBREAD", "Read", function(act)
     print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
@@ -86,7 +72,7 @@ local action_nbread = AddAction("NBREAD", "Read", function(act)
     return result, reason
 end)
 action_nbread.mount_valid = true
-
+------------------------------------------------------------------
 --[[
 All possible component action categories: SCENE, USEITEM, POINT, EQUIPPED, INVENTORY, ISVALID
 --]]
@@ -95,10 +81,16 @@ AddComponentAction("INVENTORY", "notebook", function(inst, doer, actions)
         table.insert(actions, ACTIONS.NBREAD)
     end
 end)
-
+------------------------------------------------------------------
 -- This loads notebook_replica into book_notebook
 AddReplicableComponent("notebook")
-
+------------------------------------------------------------------
+local State = GLOBAL.State
+local FRAMES = GLOBAL.FRAMES
+local TimeEvent = GLOBAL.TimeEvent
+local EventHandler = GLOBAL.EventHandler
+local ActionHandler = GLOBAL.ActionHandler
+local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
 local state_notebook = State{
     name = "notebook",
     tags = { "doing" },
@@ -160,11 +152,15 @@ local state_notebook = State{
         end
     end,
 }
+
 AddStategraphState("wilson", state_notebook)
 AddStategraphState("wilson_client", state_notebook)
 
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
+------------------------------------------------------------------
+local checkentity = GLOBAL.checkentity
+local checkstring = GLOBAL.checkstring
 
 local function printinvalid(rpcname, player)
     print(string.format("Invalid %s RPC from (%s) %s", rpcname, player.userid or "", player.name or ""))
