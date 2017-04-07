@@ -29,8 +29,13 @@ STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.BOOK_NOTEBOOK = "Should I take down some notes?"
 STRINGS.NOTEBOOK =
 {
-    BOOKTITLELEFT = "\"",
-    BOOKTITLERIGHT = "\"",
+    BOOKTITLELEFT   = "\"",
+    BOOKTITLERIGHT  = "\"",
+    BUTTON_CANCEL   = "Cancel",
+    BUTTON_CLEAR    = "Clear",
+    BUTTON_ACCEPT   = "Accept",
+    BUTTON_LASTPAGE = "Last Page",
+    BUTTON_NEXTPAGE = "Next Page",
 }
 
 --[[

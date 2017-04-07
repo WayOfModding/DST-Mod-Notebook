@@ -139,17 +139,16 @@ end
 
 local config =
 {
-    prompt = "Notebook",
     animbank = "ui_board_5x3",
     animbuild = "ui_board_5x3",
     menuoffset = Vector3(6, -250, 0),
 
-    cancelbtn = { text = "Cancel", cb = nil, control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", cb = nil, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = "Accept", cb = nil, control = CONTROL_MENU_MISC_1 },
+    cancelbtn = { text = STRINGS.NOTEBOOK.BUTTON_CANCEL, cb = nil, control = CONTROL_CANCEL },
+    middlebtn = { text = STRINGS.NOTEBOOK.BUTTON_CLEAR, cb = nil, control = CONTROL_MENU_MISC_2 },
+    acceptbtn = { text = STRINGS.NOTEBOOK.BUTTON_ACCEPT, cb = nil, control = CONTROL_MENU_MISC_1 },
     
-    lastpagebtn = { text = "Last Page", cb = nil, control = CONTROL_ZOOM_IN },
-    nextpagebtn = { text = "Next Page", cb = nil, control = CONTROL_ZOOM_OUT },
+    lastpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_LASTPAGE, cb = nil, control = CONTROL_ZOOM_IN },
+    nextpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_NEXTPAGE, cb = nil, control = CONTROL_ZOOM_OUT },
 }
 
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
@@ -203,12 +202,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- Frame
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
-    self.bganim:SetScale(1, 1, 1)
-
-    --self.title = self.root:AddChild(Text(BUTTONFONT, 50))
-    --self.title:SetPosition(0, 70, 0)
-    --self.title:SetColour(0, 0, 0, 1)
-    --self.title:SetString(self.config.prompt)
 
     --self.edit_text_bg = self.root:AddChild(Image("images/textboxes.xml", "textbox_long.tex"))
     --self.edit_text_bg:SetPosition(0, 5, 0)
@@ -367,12 +360,7 @@ function WriteableWidget:Close()
             self.bganim:GetAnimState():PlayAnimation("close")
         end
 
-        self.black:Kill()
-        --self.title:Kill()
-        self.edit_text:SetEditing(false)
-        self.edit_text:Kill()
-        --self.edit_text_bg:Kill()
-        self.menu:Kill()
+        self:KillAllChildren()
 
         self.isopen = false
 
