@@ -16,7 +16,7 @@ local checkentity = GLOBAL.checkentity
 local checkstring = GLOBAL.checkstring
 local assert = GLOBAL.assert
 
-local NotebookMod = {}
+local DEBUG = true
 
 PrefabFiles =
 {
@@ -50,6 +50,12 @@ AddPlayerPostInit(function(inst)
     -- Replicable components should only be added on server side!
     -- If a component is added on client side will cause duplicate replica exception!
     inst:AddComponent("nbreader")
+    
+    -- Spawn a book item in tester's inventory
+    if DEBUG and inst.components.inventory then
+        local item = SpawnPrefab("book_notebook")
+        inst.components.inventory:GiveItem(item)
+    end
 end)
 
 local action_nbread = AddAction("NBREAD", "Read", function(act)
