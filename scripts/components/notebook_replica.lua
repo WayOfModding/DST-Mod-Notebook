@@ -95,7 +95,8 @@ function Notebook:GetPages()
     return res
 end
 
-function Notebook:GetPage(page)
+-- Notebook(replica):GetPage is only used locally
+local function GetPage(self, page)
     return self:GetPages()[page] or ""
 end
 
