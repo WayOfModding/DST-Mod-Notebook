@@ -186,7 +186,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.bganim:SetScale(1, 1, 1)
     -- Frame
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
-    self.bgimage = self.root:AddChild(Image("images/globalpanels.xml", "panel_long.tex"))
+    self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
 
     --self.edit_text_bg = self.root:AddChild(Image("images/textboxes.xml", "textbox_long.tex"))
     --self.edit_text_bg:SetPosition(0, 5, 0)
@@ -381,14 +381,16 @@ function WriteableWidget:OnControl(control, down)
 end
 
 local function ShowWriteableWidget(player, playerhud, writeable)
-    assert(player == playerhud.owner, "KK-TEST> player != playerhud.owner")
     local screen = WriteableWidget(playerhud.owner, writeable)
-    playerhud:OpenScreenUnderPause(screen)
+    if screen == nil then
+        return false, "Fail to make screen!"
+    end
+    TheFrontEnd:PushScreen(screen)
     if TheFrontEnd:GetActiveScreen() == screen then
         -- Have to set editing AFTER pushscreen finishes.
         screen.edit_text:SetEditing(true)
     end
-    return screen
+    return true
 end
 
 local function MakeWriteableWidget(inst, doer)
@@ -402,4 +404,4 @@ local function MakeWriteableWidget(inst, doer)
     end
 end
 
-return nil, MakeWriteableWidget
+return MakeWriteableWidget

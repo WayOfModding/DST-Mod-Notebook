@@ -58,20 +58,20 @@ function Notebook:BeginWriting(doer)
     self.inst:ListenForEvent("onremove", self.onclosepopups, doer)
     
     -- Make pop-up window
-    if doer ~= nil then
-        if doer.HUD == nil then
-            return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
-        elseif makescreen ~= nil and type(makescreen) == "function" then
-            local function trymakescreen()
-                makescreen(self.inst, doer)
-            end
-            local status, result, reason = xpcall(trymakescreen, debug.traceback)
-            return status and result, reason
-        else
-            return false, "NotebookScreen not found!"
-        end
+    if doer == nil then
+        return false, "Notebook:BeginWriting: 'doer' is nil!"
+    elseif doer.HUD == nil then
+        return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
+    elseif makescreen == nil then
+        return false, "Notebook:BeginWriting: 'makescreen' is nil!"
+    elseif type(makescreen) ~= "function" then
+        return false, "Notebook:BeginWriting: 'makescreen' is not a function!"
     else
-        return false, "KK-TEST> Invalid doer!"
+        local function trymakescreen()
+            return makescreen(self.inst, doer)
+        end
+        local status, result, reason = xpcall(trymakescreen, debug.traceback)
+        return status and result, reason
     end
 end
 

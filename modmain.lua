@@ -8,6 +8,17 @@ PrefabFiles =
     "book_notebook",
 }
 
+Assets =
+{
+    Asset("ANIM", "anim/book_notebook.zip"),
+    
+    Asset("IMAGE", "images/book_notebook.tex"),
+    Asset("ATLAS", "images/book_notebook.xml"),
+    
+    Asset("IMAGE", "images/scoreboard.tex"),
+    Asset("ATLAS", "images/scoreboard.xml"),
+}
+
 ------------------------------------------------------------------------
 local STRINGS = GLOBAL.STRINGS
 -- Strings
@@ -55,6 +66,9 @@ action_nbread.fn    = function(act)
         reason = "Action.Read: 'act.doer.components.nbreader' is nil"
     else
         result, reason = act.doer.components.nbreader:Read(targ)
+    end
+    if not result then
+        print("KK-TEST> Action 'Read' failed due to:\n\t" .. reason)
     end
     return result, reason
 end
