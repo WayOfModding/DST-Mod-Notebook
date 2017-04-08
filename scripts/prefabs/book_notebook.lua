@@ -27,7 +27,7 @@ Call stack 'ACTIONS.GIVE'
                 * InventoryItem:OnRemoved()
                     > EntityScript:RemoveChild(self.inst)
                     * InventoryItem:ClearOwner()
-                    * EntityScript:ReturnToScene()
+                    * EntityScript:ReturnToScene()  -- move item out of inventory
         * InventoryItem:OnPickup(self.inst)         -- try to destroy item
         * Inventory:GetOverflowContainer()          -- get backpack
         * Inventory:GetNextAvailableSlot(inst)      -- find an empty slot to put item
@@ -35,7 +35,7 @@ Call stack 'ACTIONS.GIVE'
         > InventoryItem:OnPutInInventory(self.inst) -- trigger a series of functions
             * InventoryItem:SetOwner(owner)
             * EntityScript:AddChild(self.inst)
-            * EntityScript:RemoveFromScene()
+            * EntityScript:RemoveFromScene()        -- move item into inventory
 --]]
 local function fn(Sim)
     local inst = CreateEntity()

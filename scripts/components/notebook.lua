@@ -44,6 +44,24 @@ local Notebook = Class(function(self, inst)
     self.onclosepopups = function(doer)
         self:EndWriting(doer)
     end
+    -- test
+    local function test()
+        print("========================= Notebook Information =========================\nGUID="..tostring(inst.GUID))
+        dumptable(self.pages)
+        print("========================= Notebook Manager Info =========================")
+        dumptable(NotebookManager.books)
+        print()
+    end
+    -- invoked by 'EntityScript:RemoveFromScene'
+    self.onenterlimbo = function()
+        print("KK-TEST> Function 'onenterlimbo' is invoked! Item 'Notebook' is moved into inventory.")
+        test()
+    end
+    -- invoked by 'EntityScript:ReturnToScene'
+    self.onexitlimbo = function()
+        print("KK-TEST> Function 'onexitlimbo' is invoked! Item 'Notebook' is moved out of inventory.")
+        test()
+    end
     
     inst:AddTag("notebook")
     --inst:DoTaskInTime(0, RegisterNetListeners)
@@ -57,6 +75,9 @@ local Notebook = Class(function(self, inst)
             return nil
         end
     end
+    
+    inst:ListenForEvent("enterlimbo", self.onenterlimbo)
+    inst:ListenForEvent("exitlimbo", self.onexitlimbo)
 end)
 
 function Notebook:OnSave()
@@ -128,6 +149,9 @@ function Notebook:OnRemoveFromEntity()
         or ThePlayer)
     self.inst:RemoveTag("notebook")
     self:Clear()
+    
+    self.inst:RemoveEventCallback("enterlimbo", self.onenterlimbo)
+    self.inst:RemoveEventCallback("exitlimbo", self.onexitlimbo)
 end
 
 Notebook.OnRemoveEntity = Notebook.EndWriting
