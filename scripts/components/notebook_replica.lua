@@ -102,7 +102,7 @@ end
 
 function Notebook:GetTitle()
     print("KK-TEST> Function Notebook(replica):GetTitle() is invoked" .. getside() .. ".")
-    return self:GetPage(0)
+    return GetPage(self, 0)
 end
 
 function Notebook:BeginWriting(doer)
