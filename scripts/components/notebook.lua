@@ -89,12 +89,13 @@ local Notebook = Class(function(self, inst)
 end)
 
 function Notebook:OnSave()
-    return { pages = self.pages }
+    print("KK-TEST> Function Notebook:OnSave() is invoked.")
+    return { pages = json.encode(self.pages) }
 end
 
 function Notebook:OnLoad(data, newents)
-    print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked.")
-    self.pages = data.pages
+    print("KK-TEST> Function Notebook:OnLoad() is invoked.")
+    self.pages = json.decode(data.pages)
     notify(self)
 end
 
