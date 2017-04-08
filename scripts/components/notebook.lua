@@ -11,8 +11,9 @@ local NotebookManager = Class(function(self)
         self.books[notebook.inst.GUID] = nil
     end
     self.GetBook = function(self, notebook)
+        local res = self.books[notebook.inst.GUID]
         self:RemoveBook(notebook)
-        return self.books[notebook.inst.GUID] or {}
+        return res or {}
     end
 end)()
 
@@ -32,7 +33,6 @@ local function notify(self)
     print("KK-TEST> Pushing newpages to clients: \"" .. pages .. "\"")
     notebook.newpages:set_local(pages)
     notebook.newpages:set(pages)
-    NotebookManager:UpdateBook(self)
 end
 
 local Notebook = Class(function(self, inst)
@@ -45,22 +45,30 @@ local Notebook = Class(function(self, inst)
         self:EndWriting(doer)
     end
     -- test
-    local function test()
-        print("========================= Notebook Information =========================\nGUID="..tostring(inst.GUID))
-        dumptable(self.pages)
-        print("========================= Notebook Manager Info =========================")
-        dumptable(NotebookManager.books)
-        print()
-    end
+    -- To remove item from inventory will trigger 'exitlimbo'
+    -- To hold item in hand will trigger 'enterlimbo'
+    -- To drop item on the ground will trigger 'exitlimbo'
+    -- local function test()
+        -- print("------------------------- Notebook Information -------------------------",
+            -- "\n\t\tGUID="..tostring(inst.GUID),
+            -- "\n\t\tpages="..tostring(json.encode(self.pages)))
+        -- print("------------------------- Notebook Manager Info ------------------------",
+            -- "\n\t\tNotebookManager.books="..tostring(json.encode(NotebookManager.books)))
+        -- print("========================================================================")
+    -- end
     -- invoked by 'EntityScript:RemoveFromScene'
     self.onenterlimbo = function()
-        print("KK-TEST> Function 'onenterlimbo' is invoked! Item 'Notebook' is moved into inventory.")
-        test()
+        -- print("========================================================================")
+        -- print("KK-TEST> Function 'onenterlimbo' is invoked!\nItem 'Notebook' is moved into inventory.")
+        -- test()
+        self.pages = NotebookManager:GetBook(self)
     end
     -- invoked by 'EntityScript:ReturnToScene'
     self.onexitlimbo = function()
-        print("KK-TEST> Function 'onexitlimbo' is invoked! Item 'Notebook' is moved out of inventory.")
-        test()
+        -- print("========================================================================")
+        -- print("KK-TEST> Function 'onexitlimbo' is invoked!\nItem 'Notebook' is moved out of inventory.")
+        -- test()
+        NotebookManager:UpdateBook(self)
     end
     
     inst:AddTag("notebook")
