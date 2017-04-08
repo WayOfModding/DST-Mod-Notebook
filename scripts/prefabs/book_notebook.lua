@@ -15,6 +15,27 @@ local function onburnt(inst)
     inst:Remove()
 end
 
+--[[
+Call stack 'ACTIONS.GIVE'
+* Trader:AcceptGift(act.doer, act.invobject)
+    * Inventory:GiveItem(item, nil, pos)            -- give item to the receiver
+        * Inventory:IsItemEquipped(inst)            -- check if item is equipped
+        * InventoryItem:RemoveFromOwner(true)       -- try to remove item from the giver's inventory/container
+            > Inventory:RemoveItem(self.inst, true)
+            > Container:RemoveItem(self.inst, true)
+                * InventoryItem:OnRemoved()
+                    > EntityScript:RemoveChild(self.inst)
+                    * InventoryItem:ClearOwner()
+                    * EntityScript:ReturnToScene()
+        * InventoryItem:OnPickup(self.inst)         -- try to destroy item
+        * Inventory:GetOverflowContainer()          -- get backpack
+        * Inventory:GetNextAvailableSlot(inst)      -- find an empty slot to put item
+            * Inventory:CanTakeItemInSlot(item, k)  -- check if item can go into container
+        > InventoryItem:OnPutInInventory(self.inst) -- trigger a series of functions
+            * InventoryItem:SetOwner(owner)
+            * EntityScript:AddChild(self.inst)
+            * EntityScript:RemoveFromScene()
+--]]
 local function fn(Sim)
     local inst = CreateEntity()
     inst.entity:AddTransform()
