@@ -10,6 +10,7 @@ local prefabs =
 }
 
 local function onburnt(inst)
+    inst.components.notebook:Destroy()
     inst:RemoveComponent("notebook")
     SpawnPrefab("ash").Transform:SetPosition(inst.Transform:GetWorldPosition())
     inst:Remove()

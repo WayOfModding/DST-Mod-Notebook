@@ -1,6 +1,21 @@
 local makescreen = require("screens/notebookscreen")
 local json = require("json")
 
+local NotebookManager = Class(function(self)
+    self.books = {}
+    
+    self.UpdateBook = function(self, notebook)
+        self.books[notebook.inst.GUID] = notebook.pages
+    end
+    self.RemoveBook = function(self, notebook)
+        self.books[notebook.inst.GUID] = nil
+    end
+    self.GetBook = function(self, notebook)
+        self:RemoveBook(notebook)
+        return self.books[notebook.inst.GUID] or {}
+    end
+end)()
+
 local function setpages(self, pages)
     print("KK-TEST> Function 'setpages' is invoked.")
     for page, text in pairs(pages) do
@@ -17,6 +32,7 @@ local function notify(self)
     print("KK-TEST> Pushing newpages to clients: \"" .. pages .. "\"")
     notebook.newpages:set_local(pages)
     notebook.newpages:set(pages)
+    NotebookManager:UpdateBook(self)
 end
 
 local Notebook = Class(function(self, inst)
@@ -57,7 +73,7 @@ function Notebook:GetDebugString()
     return "Notebook" .. json.encode(self.pages)
 end
 
-function Notebook:Clear()
+local function Clear(self)
     self.pages = {}
     notify(self)
 end
@@ -115,5 +131,9 @@ function Notebook:OnRemoveFromEntity()
 end
 
 Notebook.OnRemoveEntity = Notebook.EndWriting
+
+function Notebook:Destroy()
+    NotebookManager:RemoveBook(self)
+end
 
 return Notebook
