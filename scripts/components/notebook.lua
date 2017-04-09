@@ -95,7 +95,7 @@ end
 
 function Notebook:OnLoad(data, newents)
     print("KK-TEST> Function Notebook:OnLoad() is invoked.")
-    self.pages = json.decode(data.pages)
+    self.pages = data.pages ~= nil and data.pages ~= "" and json.decode(data.pages) or {}
     notify(self)
 end
 
