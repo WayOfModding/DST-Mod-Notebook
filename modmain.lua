@@ -42,7 +42,8 @@ AddPlayerPostInit(function(inst)
     inst:AddComponent("nbreader")
     
     if DEBUG then
-        assert(require("util/debug") and IsDeveloper ~= nil, "Function 'IsDeveloper' is missing!")
+        require("util/debug")
+        assert(IsDeveloper ~= nil, "Function 'IsDeveloper' is missing!")
         DEBUG = IsDeveloper(inst)
     end
     -- Spawn a book item in tester's inventory
