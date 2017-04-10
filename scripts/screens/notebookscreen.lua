@@ -353,13 +353,13 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     
     local menuoffset = config.menuoffset or Vector3(0, 0, 0)
     if TheInput:ControllerAttached() then
-        local spacing = 150
+        local spacing = 200
         self.menu = self.root:AddChild(Menu(self.buttons, spacing, true, "none"))
         self.menu:SetTextSize(40)
         local w = self.menu:AutoSpaceByText(15)
         self.menu:SetPosition(menuoffset.x - .5 * w, menuoffset.y, menuoffset.z)
     else
-        local spacing = 110
+        local spacing = 160
         self.menu = self.root:AddChild(Menu(self.buttons, spacing, true, "small"))
         self.menu:SetTextSize(35)
         self.menu:SetPosition(menuoffset.x - .5 * spacing * (#self.buttons - 1), menuoffset.y, menuoffset.z)
