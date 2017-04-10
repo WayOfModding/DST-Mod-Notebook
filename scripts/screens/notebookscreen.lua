@@ -248,19 +248,18 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         self:OnControl(CONTROL_ACCEPT, false)
     end
     self.default_focus = self.edit_text
-    --[[
     -------------------------------------------------------------------------------
     -- Pages
     -------------------------------------------------------------------------------
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.components.notebook:GetPages()
-    --print("KK-TEST> @notebookscreen.lua self.pages=" .. json.encode(self.pages) .. "\ndumptable(self.pages):")
-    --dumptable(self.pages)
     self.marks = {}
-    
     -- Initialize text area
     self:OverrideText(GetTitle(self))
+    
+    
+    --[[
     
     -------------------------------------------------------------------------------
     -- Buttons
