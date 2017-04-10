@@ -139,6 +139,13 @@ local config =
     nextpagebtn = { text = "Next Page", control = CONTROL_ZOOM_OUT },
 }
 
+--[[
+SCALEMODE_NONE = 0
+SCALEMODE_FILLSCREEN = 1
+SCALEMODE_PROPORTIONAL = 2
+SCALEMODE_FIXEDPROPORTIONAL = 3
+SCALEMODE_FIXEDSCREEN_NONDYNAMIC = 4
+--]]
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
     Screen._ctor(self, "NotebookScreen")
 
@@ -155,7 +162,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self:SetPosition(0, 0, 0)
     self:SetVAnchor(ANCHOR_MIDDLE)
     self:SetHAnchor(ANCHOR_MIDDLE)
-
+    --[[
     self.scalingroot = self:AddChild(Widget("writeablewidgetscalingroot"))
     self.scalingroot:SetScale(TheFrontEnd:GetHUDScale())
 
@@ -168,13 +175,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.black:SetHRegPoint(ANCHOR_MIDDLE)
     self.black:SetVAnchor(ANCHOR_MIDDLE)
     self.black:SetHAnchor(ANCHOR_MIDDLE)
-    --[[
-    SCALEMODE_NONE = 0
-    SCALEMODE_FILLSCREEN = 1
-    SCALEMODE_PROPORTIONAL = 2
-    SCALEMODE_FIXEDPROPORTIONAL = 3
-    SCALEMODE_FIXEDSCREEN_NONDYNAMIC = 4
-    --]]
+    
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
     self.black:SetTint(0, 0, 0, 0)
     self.black.OnMouseButton = function()
@@ -305,20 +306,25 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         --end
     --end
 
+    --]]
     self.isopen = true
     self:Show()
 
-    if self.bgimage.texture then
-        self.bgimage:Show()
-    else
-        self.bganim:GetAnimState():PlayAnimation("open")
+    if self.bgimage then
+        if self.bgimage.texture then
+            self.bgimage:Show()
+        else
+            self.bganim:GetAnimState():PlayAnimation("open")
+        end
     end
 end)
 
 function WriteableWidget:OnBecomeActive()
     self._base.OnBecomeActive(self)
-    self.edit_text:SetFocus()
-    self.edit_text:SetEditing(true)
+    if self.edit_text then
+        self.edit_text:SetFocus()
+        self.edit_text:SetEditing(true)
+    end
 end
 
 function WriteableWidget:Close()
@@ -346,12 +352,14 @@ function WriteableWidget:Close()
 end
 
 function WriteableWidget:OverrideText(text)
-    self.edit_text:SetString(text)
-    self.edit_text:SetFocus()
+    if self.edit_text then
+        self.edit_text:SetString(text)
+        self.edit_text:SetFocus()
+    end
 end
 
 function WriteableWidget:GetText()
-    return self.edit_text:GetString()
+    return self.edit_text and self.edit_text:GetString() or ""
 end
 
 function WriteableWidget:OnControl(control, down)
@@ -367,7 +375,7 @@ function WriteableWidget:OnControl(control, down)
             --return true
         --end
     --end
-    if not down then
+    if not down and self.buttons then
         for i, v in ipairs(self.buttons) do
             if control == v.control and v.cb ~= nil then
                 v.cb()
@@ -380,13 +388,14 @@ function WriteableWidget:OnControl(control, down)
     end
 end
 
-local function ShowWriteableWidget(player, playerhud, writeable)
-    local screen = WriteableWidget(playerhud.owner, writeable)
+local function ShowWriteableWidget(player, playerhud, book)
+    local screen = WriteableWidget(playerhud.owner, book)
     if screen == nil then
         return false, "Fail to make screen!"
     end
     TheFrontEnd:PushScreen(screen)
-    if TheFrontEnd:GetActiveScreen() == screen then
+    -- TODO is this necessary? @see WriteableWidget:OnBecomeActive
+    if TheFrontEnd:GetActiveScreen() == screen and screen.edit_text then
         -- Have to set editing AFTER pushscreen finishes.
         screen.edit_text:SetEditing(true)
     end
