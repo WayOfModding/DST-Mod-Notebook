@@ -281,10 +281,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:SetHelpTextEdit("")
     self.default_focus = self.edit_text
 
-    if config.bgatlas ~= nil and config.bgimage ~= nil then
-        self.bgimage:SetTexture(config.bgatlas, config.bgimage)
-    end
-
     if config.animbank ~= nil then
         self.bganim:GetAnimState():SetBank(config.animbank)
     end
