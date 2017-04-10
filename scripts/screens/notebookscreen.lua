@@ -185,11 +185,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
     --[[
-    self.bganim = self.root:AddChild(UIAnim())
-    self.bganim:SetScale(1, 1, 1)
-    -- Frame
-    --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
-
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     self.edit_text:SetForceEdit(true)
@@ -282,14 +277,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:SetHelpTextEdit("")
     self.default_focus = self.edit_text
 
-    if config.animbank ~= nil then
-        self.bganim:GetAnimState():SetBank(config.animbank)
-    end
-
-    if config.animbuild ~= nil then
-        self.bganim:GetAnimState():SetBuild(config.animbuild)
-    end
-    
     self.root:SetPosition(0, 150, 0)
     
     --if config.buttoninfo ~= nil then
@@ -305,8 +292,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     if self.bgimage then
         if self.bgimage.texture then
             self.bgimage:Show()
-        else
-            self.bganim:GetAnimState():PlayAnimation("open")
         end
     end
 end)
@@ -332,8 +317,6 @@ function WriteableWidget:Close()
         if self.bgimage then
             if self.bgimage.texture then
                 self.bgimage:Hide()
-            else
-                self.bganim:GetAnimState():PlayAnimation("close")
             end
         end
 
@@ -345,9 +328,6 @@ function WriteableWidget:Close()
         end
         if self.menu then
             self.menu:Kill()
-        end
-        if self.bganim then
-            self.bganim:Kill()
         end
         if self.bgimage then
             self.bgimage:Kill()
