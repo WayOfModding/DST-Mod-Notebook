@@ -1,6 +1,6 @@
 name                        = "Notebook"
 author                      = "KaiserKatze"
-version                     = "1.5.9"
+version                     = "1.5.10"
 description                 = "Version "..version.."\nThe palest ink is better than the best memory.\n\nYou can craft a notebook that anyone can read and write with 2 papyrus."
 forumthread                 = ""
 api_version                 = 10
