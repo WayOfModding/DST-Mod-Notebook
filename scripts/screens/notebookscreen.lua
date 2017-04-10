@@ -162,7 +162,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self:SetPosition(0, 0, 0)
     self:SetVAnchor(ANCHOR_MIDDLE)
     self:SetHAnchor(ANCHOR_MIDDLE)
-    --[[
+    
     self.scalingroot = self:AddChild(Widget("writeablewidgetscalingroot"))
     self.scalingroot:SetScale(TheFrontEnd:GetHUDScale())
 
@@ -182,7 +182,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         print("KK-TEST> Widget 'black' is busted.")
         oncancel(self.writeable, self.owner, self)
     end
-
+    --[[
     self.bganim = self.root:AddChild(UIAnim())
     self.bganim:SetScale(1, 1, 1)
     -- Frame
@@ -337,13 +337,29 @@ function WriteableWidget:Close()
 
         self.writeable = nil
 
-        if self.bgimage.texture then
-            self.bgimage:Hide()
-        else
-            self.bganim:GetAnimState():PlayAnimation("close")
+        if self.bgimage then
+            if self.bgimage.texture then
+                self.bgimage:Hide()
+            else
+                self.bganim:GetAnimState():PlayAnimation("close")
+            end
         end
 
-        self:KillAllChildren()
+        if self.black then
+            self.black:Kill()
+        end
+        if self.edit_text then
+            self.edit_text:Kill()
+        end
+        if self.menu then
+            self.menu:Kill()
+        end
+        if self.bganim then
+            self.bganim:Kill()
+        end
+        if self.bgimage then
+            self.bgimage:Kill()
+        end
 
         self.isopen = false
 
