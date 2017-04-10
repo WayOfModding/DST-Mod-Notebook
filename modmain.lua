@@ -67,6 +67,7 @@ action_nbread.fn    = function(act)
     else
         result, reason = act.doer.components.nbreader:Read(targ)
     end
+    reason = reason or "Unknown"
     if not result then
         print("KK-TEST> Action 'Read' failed due to:\n\t" .. reason)
     end

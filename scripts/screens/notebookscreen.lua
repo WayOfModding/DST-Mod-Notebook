@@ -167,17 +167,13 @@ end
 
 local config =
 {
-    prompt = "Notebook",
-    animbank = nil,
-    animbuild = nil,
     menuoffset = Vector3(6, -250, 0),
 
-    cancelbtn = { text = "Cancel", control = CONTROL_CANCEL },
-    middlebtn = { text = "Clear", control = CONTROL_MENU_MISC_1 },
-    acceptbtn = { text = "Accept", control = CONTROL_ACCEPT },
-    
-    lastpagebtn = { text = "Last Page", control = CONTROL_ZOOM_IN },
-    nextpagebtn = { text = "Next Page", control = CONTROL_ZOOM_OUT },
+    cancelbtn   = { text = "Cancel",    control = CONTROL_CANCEL, },
+    middlebtn   = { text = "Clear",     control = CONTROL_MENU_MISC_1, },
+    acceptbtn   = { text = "Accept",    control = CONTROL_ACCEPT, },
+    lastpagebtn = { text = "Last Page", control = CONTROL_ZOOM_IN, },
+    nextpagebtn = { text = "Next Page", control = CONTROL_ZOOM_OUT, },
 }
 
 --[[
@@ -192,7 +188,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 
     self.owner = owner
     self.writeable = writeable
-    self.config = config
 
     self.isopen = false
 
@@ -209,6 +204,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 
     self.root = self.scalingroot:AddChild(Widget("writeablewidgetroot"))
     self.root:SetScale(.6, .6, .6)
+    self.root:SetPosition(0, 150, 0)
 
     -- Click on the screen will quit Notebook
     self.black = self.root:AddChild(Image("images/global.xml", "square.tex"))
@@ -257,48 +253,63 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.marks = {}
     -- Initialize text area
     self:OverrideText(GetTitle(self))
-    
-    
-    --[[
-    
     -------------------------------------------------------------------------------
     -- Buttons
     -------------------------------------------------------------------------------
     self.buttons = {}
     -- Cancel
-    table.insert(self.buttons, { text = config.cancelbtn.text, cb = function()
-        print("KK-TEST> Button 'Cancel' is pressed.")
-        oncancel(self.writeable, self.owner, self)
-    end, control = config.cancelbtn.control })
+    table.insert(self.buttons, {
+        text = config.cancelbtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Cancel' is pressed.")
+            oncancel(self.writeable, self.owner, self)
+        end,
+        control = config.cancelbtn.control
+    })
     -- Clear
-    table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
-        print("KK-TEST> Button 'Clear' is pressed.")
-        onmiddle(self.writeable, self.owner, self)
-        MarkCurrent(self)
-    end, control = config.middlebtn.control })
+    table.insert(self.buttons, {
+        text = config.middlebtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Clear' is pressed.")
+            onmiddle(self.writeable, self.owner, self)
+            MarkCurrent(self)
+        end,
+        control = config.middlebtn.control
+    })
     -- Accept
-    table.insert(self.buttons, { text = config.acceptbtn.text, cb = function()
-        print("KK-TEST> Button 'Accept' is pressed.")
-        onaccept(self.writeable, self.owner, self)
-    end, control = config.acceptbtn.control })
+    table.insert(self.buttons, {
+        text = config.acceptbtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Accept' is pressed.")
+            onaccept(self.writeable, self.owner, self)
+        end,
+        control = config.acceptbtn.control
+    })
     -- Last Page
-    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
-        print("KK-TEST> Button 'Last Page' is pressed.")
-        LastPage(self)
-    end, control = config.lastpagebtn.control })
+    table.insert(self.buttons, {
+        text = config.lastpagebtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Last Page' is pressed.")
+            LastPage(self)
+        end,
+        control = config.lastpagebtn.control
+    })
     -- Next Page
-    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
-        print("KK-TEST> Button 'Next Page' is pressed.")
-        NextPage(self)
-    end, control = config.nextpagebtn.control })
-
+    table.insert(self.buttons, {
+        text = config.nextpagebtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Next Page' is pressed.")
+            NextPage(self)
+        end,
+        control = config.nextpagebtn.control
+    })
+    
     for i, v in ipairs(self.buttons) do
         if v.control ~= nil then
             self.edit_text:SetPassControlToScreen(v.control, true)
         end
     end
-    -------------------------------------------------------------------------------
-
+    
     local menuoffset = config.menuoffset or Vector3(0, 0, 0)
     if TheInput:ControllerAttached() then
         local spacing = 150
@@ -312,16 +323,8 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         self.menu:SetTextSize(35)
         self.menu:SetPosition(menuoffset.x - .5 * spacing * (#self.buttons - 1), menuoffset.y, menuoffset.z)
     end
+    -------------------------------------------------------------------------------
     
-    self.root:SetPosition(0, 150, 0)
-    
-    --if config.buttoninfo ~= nil then
-        --if doer ~= nil and doer.components.playeractionpicker ~= nil then
-            --doer.components.playeractionpicker:RegisterContainer(container)
-        --end
-    --end
-
-    --]]
     self.isopen = true
     self:Show()
 
@@ -423,7 +426,7 @@ local function ShowWriteableWidget(player, playerhud, book)
         -- Have to set editing AFTER pushscreen finishes.
         screen.edit_text:SetEditing(true)
     end
-    return true
+    return true, "NotebookScreen is created successfully!"
 end
 
 local function MakeWriteableWidget(inst, doer)
