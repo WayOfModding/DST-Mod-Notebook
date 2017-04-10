@@ -10,6 +10,7 @@ local prefabs =
 }
 
 local function onburnt(inst)
+    inst.components.notebook:Destroy()
     inst:RemoveComponent("notebook")
     SpawnPrefab("ash").Transform:SetPosition(inst.Transform:GetWorldPosition())
     inst:Remove()
@@ -28,13 +29,12 @@ local function fn(Sim)
     inst.AnimState:PlayAnimation("idle")
     
     inst:AddComponent("inspectable")
+    inst:AddComponent("inventoryitem")
+    inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
     
     -- Writeable book --
     inst:AddComponent("notebook")
     --------------------
-
-    inst:AddComponent("inventoryitem")
-    inst.components.inventoryitem.atlasname = "images/book_notebook.xml"
     
     -- Books are flammable
     inst:AddComponent("fuel")

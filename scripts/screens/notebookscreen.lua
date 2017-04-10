@@ -11,7 +11,7 @@ local json = require "json"
 local CONTROL_MENU_MISC_1   = 68
 local TITLE_LENGTH_LIMIT    = 16
 local MAX_HUD_SCALE         = 1.25
-local MAX_WRITEABLE_LENGTH  = 200
+local TEXT_LENGTH_LIMIT     = 256
 
 local function SetPages(book, pages, marks)
     if book == nil
@@ -64,7 +64,7 @@ local function OnPageUpdated(self, page)
     else
         self.edit_text:SetHAlign(ANCHOR_LEFT)
         self.edit_text:SetVAlign(ANCHOR_TOP)
-        self.edit_text:SetTextLengthLimit(MAX_WRITEABLE_LENGTH)
+        self.edit_text:SetTextLengthLimit(TEXT_LENGTH_LIMIT)
     end
     self:OverrideText(res)
 end
@@ -167,8 +167,8 @@ end
 
 local config =
 {
-    menuoffset = Vector3(6, -250, 0),
-
+    menuoffset  = Vector3(6, -250, 0),
+    
     cancelbtn   = { text = "Cancel",    control = CONTROL_CANCEL, },
     middlebtn   = { text = "Clear",     control = CONTROL_MENU_MISC_1, },
     acceptbtn   = { text = "Accept",    control = CONTROL_ACCEPT, },
@@ -399,7 +399,7 @@ function WriteableWidget:Close()
                 self.bgimage:Hide()
             end
         end
-
+        
         if self.black then
             self.black:Kill()
         end
@@ -412,9 +412,10 @@ function WriteableWidget:Close()
         if self.bgimage then
             self.bgimage:Kill()
         end
-
+        self:KillAllChildren()
+        
         self.isopen = false
-
+        
         self.inst:DoTaskInTime(.3, function() TheFrontEnd:PopScreen(self) end)
     end
 end

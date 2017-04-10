@@ -1,8 +1,8 @@
 local require = GLOBAL.require
 local assert = GLOBAL.assert
 
-local NotebookMod = {}
-
+local DEBUG = true
+------------------------------------------------------------------
 PrefabFiles =
 {
     "book_notebook",
@@ -25,10 +25,15 @@ local STRINGS = GLOBAL.STRINGS
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.BOOK_NOTEBOOK = "Should I take down some notes?"
-STRINGS.NOTEBOOK =
+STRINGS.NOTEBOOK    =
 {
-    BOOKTITLELEFT = "\"",
-    BOOKTITLERIGHT = "\"",
+    BOOKTITLELEFT   = "\"",
+    BOOKTITLERIGHT  = "\"",
+    BUTTON_CANCEL   = "Cancel",
+    BUTTON_CLEAR    = "Clear",
+    BUTTON_ACCEPT   = "Accept",
+    BUTTON_LASTPAGE = "Last Page",
+    BUTTON_NEXTPAGE = "Next Page",
 }
 ------------------------------------------------------------------------
 local Recipe = GLOBAL.Recipe
@@ -40,9 +45,23 @@ local recipe_notebook = Recipe("book_notebook", { Ingredient("papyrus", 2) }, RE
 
 local resolvefilepath = GLOBAL.resolvefilepath
 recipe_notebook.atlas = resolvefilepath("images/book_notebook.xml")
+------------------------------------------------------------------------
+local SpawnPrefab = GLOBAL.SpawnPrefab
+
+local function IsNotebook(inst)
+    return inst.prefab == "book_notebook"
+end
 
 AddPlayerPostInit(function(inst)
     inst:AddComponent("nbreader")
+    
+    -- Spawn a book item in tester's inventory
+    if DEBUG and inst.components.inventory
+        and inst.components.inventory:FindItem(IsNotebook) == nil
+    then
+        local item = SpawnPrefab("book_notebook")
+        inst.components.inventory:GiveItem(item)
+    end
 end)
 ------------------------------------------------------------------------
 local ACTIONS = GLOBAL.ACTIONS
@@ -150,6 +169,7 @@ local state_notebook = State{
         end
     end,
 }
+
 AddStategraphState("wilson", state_notebook)
 ------------------------------------------------------------------------
 local ActionHandler = GLOBAL.ActionHandler

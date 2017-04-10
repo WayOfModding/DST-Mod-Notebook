@@ -33,19 +33,21 @@ local Notebook = Class(function(self, inst)
 end)
 
 function Notebook:OnSave()
-    return { pages = self.pages }
+    print("KK-TEST> Function Notebook:OnSave() is invoked.")
+    return { pages = json.encode(self.pages) }
 end
 
 function Notebook:OnLoad(data, newents)
-    print("KK-TEST> Function Notebook:OnLoad(" .. json.encode(data) .. ") is invoked.")
+    print("KK-TEST> Function Notebook:OnLoad() is invoked.")
     self.pages = data.pages
+    --self.pages = data.pages ~= nil and data.pages ~= "" and json.decode(data.pages) or {}
 end
 
 function Notebook:GetDebugString()
     return "Notebook" .. json.encode(self.pages)
 end
 
-function Notebook:Clear()
+local function Clear(self)
     self.pages = {}
 end
 
@@ -83,7 +85,7 @@ function Notebook:EndWriting(doer)
 end
 
 function Notebook:GetPages()
-    print("KK-TEST> Function Notebook:SetPages() is invoked.")
+    print("KK-TEST> Function Notebook:GetPages() is invoked.")
     return self.pages
 end
 
@@ -102,7 +104,7 @@ function Notebook:SetPages(pages)
     if pages == nil then
         return false, "Nil parameter 'pages'"
     end
-    assert(type(pages) ~= "table", "Parameter 'pages' has invalid type!")
+    assert(type(pages) ~= "table", "Parameter 'pages' has invalid type '" .. type(pages) .. "'!")
     setpages(self, pages)
     return true
 end
@@ -111,7 +113,7 @@ end
 function Notebook:OnRemoveFromEntity()
     self:EndWriting(self.inst.components.inventoryitem and self.inst.components.inventoryitem.owner)
     self.inst:RemoveTag("notebook")
-    self:Clear()
+    Clear(self)
 end
 
 Notebook.OnRemoveEntity = Notebook.EndWriting
@@ -130,6 +132,10 @@ function Notebook:CollectInventoryActions(doer, actions)
     if doer.components.nbreader then
         table.insert(actions, ACTIONS.NBREAD)
     end
+end
+
+function Notebook:Destroy()
+    NotebookManager:RemoveBook(self)
 end
 
 return Notebook
