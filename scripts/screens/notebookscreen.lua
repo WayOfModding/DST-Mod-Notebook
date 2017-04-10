@@ -182,12 +182,13 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         print("KK-TEST> Widget 'black' is busted.")
         oncancel(self.writeable, self.owner, self)
     end
+    
+    self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
     --[[
     self.bganim = self.root:AddChild(UIAnim())
     self.bganim:SetScale(1, 1, 1)
     -- Frame
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
-    self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
 
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
