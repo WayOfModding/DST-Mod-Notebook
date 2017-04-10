@@ -48,26 +48,6 @@ local function GetTitle(self)
     --print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
     return res
 end
-local function OnPageUpdated(self, page)
-    --print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
-    if self == nil
-        or page == nil
-        or self.edit_text == nil
-    then
-        return
-    end
-    local res = GetPage(self, page) or ""
-    if page == 0 then
-        self.edit_text:SetHAlign(ANCHOR_MIDDLE)
-        self.edit_text:SetVAlign(ANCHOR_MIDDLE)
-        self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
-    else
-        self.edit_text:SetHAlign(ANCHOR_LEFT)
-        self.edit_text:SetVAlign(ANCHOR_TOP)
-        self.edit_text:SetTextLengthLimit(TEXT_LENGTH_LIMIT)
-    end
-    self:OverrideText(res)
-end
 local function MarkPage(self, page)
     --print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
     if self == nil
@@ -94,7 +74,18 @@ local function UpdatePage(self, page)
         return
     end
     self.page = page
-    OnPageUpdated(self, page)
+    
+    local res = GetPage(self, page)
+    if page == 0 then
+        self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+        self.edit_text:SetVAlign(ANCHOR_MIDDLE)
+        self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
+    else
+        self.edit_text:SetHAlign(ANCHOR_LEFT)
+        self.edit_text:SetVAlign(ANCHOR_TOP)
+        self.edit_text:SetTextLengthLimit(TEXT_LENGTH_LIMIT)
+    end
+    self:OverrideText(res)
 end
 local function LastPage(self)
     --print("KK-TEST> Function Screen:LastPage() is invoked.")
@@ -140,7 +131,7 @@ local function onaccept(inst, doer, widget)
     end
     
     SetPages(inst, widget.pages, widget.marks)
-
+    
     widget.edit_text:SetEditing(false)
     EndWriting(inst, doer)
     widget:Close()
@@ -160,8 +151,8 @@ local function oncancel(inst, doer, widget)
         return
     end
     
+    widget.edit_text:SetEditing(false)
     EndWriting(inst, doer)
-    
     widget:Close()
 end
 
@@ -377,6 +368,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 end)
 
 function WriteableWidget:OnBecomeActive()
+    print("KK-TEST> Function 'WriteableWidget:OnBecomeActive' is invoked!")
     self._base.OnBecomeActive(self)
     if self.edit_text then
         self.edit_text:SetFocus()
@@ -386,12 +378,6 @@ end
 
 function WriteableWidget:Close()
     if self.isopen then
-        --if self.container ~= nil then
-            --if self.owner ~= nil and self.owner.components.playeractionpicker ~= nil then
-                --self.owner.components.playeractionpicker:UnregisterContainer(self.container)
-            --end
-        --end
-
         self.writeable = nil
 
         if self.bgimage then
@@ -466,6 +452,7 @@ local function ShowWriteableWidget(player, playerhud, book)
     -- TODO is this necessary? @see WriteableWidget:OnBecomeActive
     if TheFrontEnd:GetActiveScreen() == screen and screen.edit_text then
         -- Have to set editing AFTER pushscreen finishes.
+        screen.edit_text:SetFocus()
         screen.edit_text:SetEditing(true)
     end
     return true, "NotebookScreen is created successfully!"
