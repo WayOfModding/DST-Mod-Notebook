@@ -1,7 +1,7 @@
 local require = GLOBAL.require
 local assert = GLOBAL.assert
 
-local DEBUG = true
+local DEBUG = false
 ------------------------------------------------------------------
 PrefabFiles =
 {
@@ -41,11 +41,6 @@ AddPlayerPostInit(function(inst)
     -- If a component is added on client side will cause duplicate replica exception!
     inst:AddComponent("nbreader")
     
-    if DEBUG then
-        require("util/debug")
-        assert(IsDeveloper ~= nil, "Function 'IsDeveloper' is missing!")
-        DEBUG = IsDeveloper(inst)
-    end
     -- Spawn a book item in tester's inventory
     if DEBUG and inst.components.inventory then
         local item = SpawnPrefab("book_notebook")
