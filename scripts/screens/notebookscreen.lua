@@ -12,11 +12,15 @@ local CONTROL_MENU_MISC_1   = 68
 local TITLE_LENGTH_LIMIT    = 16
 local MAX_HUD_SCALE         = 1.25
 local MAX_WRITEABLE_LENGTH  = 200
-local CODEFONT              = "ptmono"
 
 local function SetPages(book, pages, marks)
-    --print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
-    
+    if book == nil
+        or pages == nil
+        or marks == nil
+        or book.components.notebook == nil
+    then
+        return
+    end
     -- Filter pages that ain't modified
     for page, mark in pairs(marks) do
         marks[page] = pages[page]
@@ -26,13 +30,18 @@ local function SetPages(book, pages, marks)
 end
 
 local function EndWriting(book, player)
-    book.components.notebook:EndWriting(player)
+    if book and player and book.components.notebook then
+        book.components.notebook:EndWriting(player)
+    end
 end
 
 local function GetPage(self, page)
-    local res = self.pages[page] or ""
+    local res = nil
+    if self and page and self.pages then
+        res = self.pages[page]
+    end
     --print("KK-TEST> Function Screen:GetPage(" .. tostring(page) .. ") returns \"" .. res .. "\".")
-    return res
+    return res or ""
 end
 local function GetTitle(self)
     local res = GetPage(self, 0)
@@ -41,6 +50,12 @@ local function GetTitle(self)
 end
 local function OnPageUpdated(self, page)
     --print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
+    if self == nil
+        or page == nil
+        or self.edit_text == nil
+    then
+        return
+    end
     local res = GetPage(self, page) or ""
     if page == 0 then
         self.edit_text:SetHAlign(ANCHOR_MIDDLE)
@@ -55,6 +70,13 @@ local function OnPageUpdated(self, page)
 end
 local function MarkPage(self, page)
     --print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
+    if self == nil
+        or page == nil
+        or self.pages == nil
+        or self.marks == nil
+    then
+        return
+    end
     local text = self.edit_text:GetString() or ""
     self.pages[page] = text
     self.marks[page] = true
@@ -65,11 +87,23 @@ local function MarkCurrent(self)
 end
 local function UpdatePage(self, page)
     --print("KK-TEST> Function Screen:UpdatePage(" .. tostring(page) .. ") is invoked.")
+    if self == nil
+        or page == nil
+        or self.page == nil
+    then
+        return
+    end
     self.page = page
     OnPageUpdated(self, page)
 end
 local function LastPage(self)
     --print("KK-TEST> Function Screen:LastPage() is invoked.")
+    if self == nil
+        or self.page == nil
+        or self.edit_text == nil
+    then
+        return
+    end
     local oldpage = self.page
     local newpage = oldpage - 1
     if newpage < 0 then newpage = 0 end
@@ -80,6 +114,13 @@ local function LastPage(self)
 end
 local function NextPage(self)
     --print("KK-TEST> Function Screen:NextPage() is invoked.")
+    if self == nil
+        or self.page == nil
+        or self.pages == nil
+        or self.edit_text == nil
+    then
+        return
+    end
     local oldpage = self.page
     local newpage = oldpage + 1
     local limit = #self.pages + 1
@@ -198,6 +239,15 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
     self.edit_text:SetVAlign(ANCHOR_MIDDLE)
     self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
+    
+    self.edit_text:OnControl(CONTROL_ACCEPT, false)
+    self.edit_text.OnTextInputted = function()
+        MarkCurrent(self)
+    end
+    self.edit_text.OnTextEntered = function()
+        self:OnControl(CONTROL_ACCEPT, false)
+    end
+    self.default_focus = self.edit_text
     --[[
     -------------------------------------------------------------------------------
     -- Pages
@@ -263,20 +313,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         self.menu:SetTextSize(35)
         self.menu:SetPosition(menuoffset.x - .5 * spacing * (#self.buttons - 1), menuoffset.y, menuoffset.z)
     end
-
-    self.edit_text:OnControl(CONTROL_ACCEPT, false)
-    self.edit_text.OnTextInputted = function()
-        --print("KK-TEST> OnTextInputted: "..self:GetText())
-        MarkCurrent(self)
-    end
-    self.edit_text.OnTextEntered = function()
-        self:OnControl(CONTROL_ACCEPT, false)
-    end
-    self.edit_text:SetHelpTextApply("")
-    self.edit_text:SetHelpTextCancel("")
-    self.edit_text:SetHelpTextEdit("")
-    self.default_focus = self.edit_text
-
+    
     self.root:SetPosition(0, 150, 0)
     
     --if config.buttoninfo ~= nil then
