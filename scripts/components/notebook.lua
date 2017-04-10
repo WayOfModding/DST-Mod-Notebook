@@ -104,7 +104,7 @@ function Notebook:SetPages(pages)
     if pages == nil then
         return false, "Nil parameter 'pages'"
     end
-    assert(type(pages) ~= "table", "Parameter 'pages' has invalid type '" .. type(pages) .. "'!")
+    assert(type(pages) == "table", "Parameter 'pages' has invalid type '" .. type(pages) .. "'!")
     setpages(self, pages)
     return true
 end
