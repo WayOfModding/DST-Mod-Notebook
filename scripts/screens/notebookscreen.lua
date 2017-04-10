@@ -209,6 +209,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
+    -- @invalid in DS
     self.edit_text:SetForceEdit(true)
     self.edit_text:SetPosition(0, 0, 0)
     self.edit_text:SetRegionSize(800, 480)
@@ -216,10 +217,15 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:SetVAlign(ANCHOR_MIDDLE)
     --self.edit_text:SetFocusedImage(self.edit_text_bg, "images/textboxes.xml", "textbox_long_over.tex", "textbox_long.tex")
     self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
+    -- @invalid in DS
     self.edit_text:EnableWordWrap(true)
+    -- @invalid in DS
     self.edit_text:EnableWhitespaceWrap(true)
+    -- @invalid in DS
     self.edit_text:EnableRegionSizeLimit(true)
+    -- @invalid in DS
     self.edit_text:EnableScrollEditWindow(false)
+    -- @invalid in DS
     self.edit_text:SetAllowNewline(true)
 
     -------------------------------------------------------------------------------
@@ -295,9 +301,13 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text.OnTextEntered = function()
         self:OnControl(CONTROL_ACCEPT, false)
     end
+    -- @invalid in DS
     self.edit_text:SetHelpTextApply("")
+    -- @invalid in DS
     self.edit_text:SetHelpTextCancel("")
+    -- @invalid in DS
     self.edit_text:SetHelpTextEdit("")
+    -- WHAT?
     self.default_focus = self.edit_text
 
     if config.bgatlas ~= nil and config.bgimage ~= nil then
