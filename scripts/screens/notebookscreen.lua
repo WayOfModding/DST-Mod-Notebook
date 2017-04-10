@@ -184,21 +184,22 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end
     
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
+    
+    --[[
+    Built-in fonts in Don't Starve:
+    DEFAULTFONT, DIALOGFONT, TITLEFONT, UIFONT, BUTTONFONT,
+    NUMBERFONT, TALKINGFONT, TALKINGFONT_WATHGRITHR,
+    SMALLNUMBERFONT, BODYTEXTFONT,
+    --]]
+    
     --[[
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
-    self.edit_text:SetForceEdit(true)
     self.edit_text:SetPosition(0, 0, 0)
     self.edit_text:SetRegionSize(800, 480)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
     self.edit_text:SetVAlign(ANCHOR_MIDDLE)
     self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
-    self.edit_text:EnableWordWrap(true)
-    self.edit_text:EnableWhitespaceWrap(true)
-    self.edit_text:EnableRegionSizeLimit(true)
-    self.edit_text:EnableScrollEditWindow(false)
-    self.edit_text:SetAllowNewline(true)
-
     -------------------------------------------------------------------------------
     -- Pages
     -------------------------------------------------------------------------------
