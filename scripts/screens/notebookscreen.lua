@@ -191,15 +191,14 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     NUMBERFONT, TALKINGFONT, TALKINGFONT_WATHGRITHR,
     SMALLNUMBERFONT, BODYTEXTFONT,
     --]]
-    
-    --[[
-    self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
+    self.edit_text = self.root:AddChild(TextEdit(DEFAULTFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     self.edit_text:SetPosition(0, 0, 0)
     self.edit_text:SetRegionSize(800, 480)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
     self.edit_text:SetVAlign(ANCHOR_MIDDLE)
     self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
+    --[[
     -------------------------------------------------------------------------------
     -- Pages
     -------------------------------------------------------------------------------
