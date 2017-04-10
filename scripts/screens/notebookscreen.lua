@@ -1,7 +1,7 @@
 local Screen = require "widgets/screen"
 local Widget = require "widgets/widget"
 local Text = require "widgets/text"
-local TextEdit = require "widgets/textedit"
+local AbsTextEdit = require "widgets/textedit"
 local Menu = require "widgets/menu"
 local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
@@ -175,6 +175,47 @@ local config =
     lastpagebtn = { text = "Last Page", control = CONTROL_ZOOM_IN, },
     nextpagebtn = { text = "Next Page", control = CONTROL_ZOOM_OUT, },
 }
+
+local TextEdit = Class(AbsTextEdit, function(self, font, size, text)
+    AbsTextEdit._ctor(self, font, size, text)
+    
+    self.pass_controls_to_screen = {}
+end)
+
+function TextEdit:SetPassControlToScreen(control, pass)
+    self.pass_controls_to_screen[control] = pass or nil
+end
+
+function TextEdit:OnControl(control, down)
+    if AbsTextEdit._base._base.OnControl(self, control, down) then return true end
+
+    --gobble up extra controls
+    if self.editing and (control ~= CONTROL_CANCEL and control ~= CONTROL_OPEN_DEBUG_CONSOLE and control ~= CONTROL_ACCEPT) then
+        return not self.pass_controls_to_screen[control]
+    end
+
+    if self.editing and not down and control == CONTROL_CANCEL then
+        self:SetEditing(false)
+        TheInput:EnableDebugToggle(true)
+        return not self.pass_controls_to_screen[control]
+    end
+    --[[
+    if self.enable_accept_control and not down and control == CONTROL_ACCEPT then
+        if not self.editing then
+            self:SetEditing(true)
+            return not self.pass_controls_to_screen[control]
+        else
+            -- Previously this was being done only in the OnRawKey, but that doesnt handle controllers very well, this does.
+            self:OnProcess()
+            return not self.pass_controls_to_screen[control]
+        end
+    end
+    --]]
+    if not down and control == CONTROL_ACCEPT then
+        self:SetEditing(true)
+        return not self.pass_controls_to_screen[control]
+    end
+end
 
 --[[
 SCALEMODE_NONE = 0
