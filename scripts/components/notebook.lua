@@ -48,27 +48,28 @@ local Notebook = Class(function(self, inst)
     -- To remove item from inventory will trigger 'exitlimbo'
     -- To hold item in hand will trigger 'enterlimbo'
     -- To drop item on the ground will trigger 'exitlimbo'
-    -- local function test()
-        -- print("------------------------- Notebook Information -------------------------",
-            -- "\n\t\tGUID="..tostring(inst.GUID),
-            -- "\n\t\tpages="..tostring(json.encode(self.pages)))
-        -- print("------------------------- Notebook Manager Info ------------------------",
-            -- "\n\t\tNotebookManager.books="..tostring(json.encode(NotebookManager.books)))
-        -- print("========================================================================")
-    -- end
+    local function test()
+        print("------------------------- Notebook Information -------------------------",
+            "\n\t\tGUID="..tostring(inst.GUID),
+            "\n\t\tpages="..tostring(json.encode(self.pages)))
+        print("------------------------- Notebook Manager Info ------------------------",
+            "\n\t\tNotebookManager.books="..tostring(json.encode(NotebookManager.books)))
+    end
     -- invoked by 'EntityScript:RemoveFromScene'
     self.onenterlimbo = function()
-        -- print("========================================================================")
-        -- print("KK-TEST> Function 'onenterlimbo' is invoked!\nItem 'Notebook' is moved into inventory.")
-        -- test()
-        self.pages = NotebookManager:GetBook(self)
+        print("========================================================================")
+        print("KK-TEST> Function 'onenterlimbo' is invoked!\n\t\tItem 'Notebook' is moved into inventory.")
+        --test()
+        print("========================================================================")
+        --self.pages = NotebookManager:GetBook(self)
     end
     -- invoked by 'EntityScript:ReturnToScene'
     self.onexitlimbo = function()
-        -- print("========================================================================")
-        -- print("KK-TEST> Function 'onexitlimbo' is invoked!\nItem 'Notebook' is moved out of inventory.")
-        -- test()
-        NotebookManager:UpdateBook(self)
+        print("========================================================================")
+        print("KK-TEST> Function 'onexitlimbo' is invoked!\n\t\tItem 'Notebook' is moved out of inventory.")
+        --test()
+        print("========================================================================")
+        --NotebookManager:UpdateBook(self)
     end
     
     inst:AddTag("notebook")
@@ -90,16 +91,17 @@ end)
 
 function Notebook:OnSave()
     print("KK-TEST> Function Notebook:OnSave() is invoked.")
-    return { pages = json.encode(self.pages) }
+    return { pages = self.pages }
 end
 
 function Notebook:OnLoad(data, newents)
     print("KK-TEST> Function Notebook:OnLoad() is invoked.")
-    self.pages = data.pages ~= nil and data.pages ~= "" and json.decode(data.pages) or {}
+    self.pages = data.pages or {}
     notify(self)
 end
 
 function Notebook:GetDebugString()
+    --print("KK-TEST> Function 'Notebook:GetDebugString' is invoked.")
     return "Notebook" .. json.encode(self.pages)
 end
 
@@ -109,6 +111,7 @@ local function Clear(self)
 end
 
 function Notebook:BeginWriting(doer)
+    print("KK-TEST> Function 'Notebook:BeginWriting' is invoked.")
     -- Notify component update
     self.inst:StartUpdatingComponent(self)
     
@@ -129,6 +132,10 @@ function Notebook:BeginWriting(doer)
 end
 
 function Notebook:EndWriting(doer)
+    print("KK-TEST> Function 'Notebook:EndWriting' is invoked.")
+    doer = doer or (self.inst.components.inventoryitem
+        and self.inst.components.inventoryitem.owner
+        or ThePlayer)
     self.inst:StopUpdatingComponent(self)
     
     self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, doer)
@@ -153,9 +160,8 @@ end
 
 -- Invoked when this component is removed from entity
 function Notebook:OnRemoveFromEntity()
-    self:EndWriting(self.inst.components.inventoryitem
-        and self.inst.components.inventoryitem.owner
-        or ThePlayer)
+    print("KK-TEST> Function 'Notebook:OnRemoveFromEntity' is invoked.")
+    self:EndWriting()
     self.inst:RemoveTag("notebook")
     self:Clear()
     
@@ -163,9 +169,15 @@ function Notebook:OnRemoveFromEntity()
     self.inst:RemoveEventCallback("exitlimbo", self.onexitlimbo)
 end
 
-Notebook.OnRemoveEntity = Notebook.EndWriting
+-- Invoked when entity book is removed from the world
+-- for example, when the book owner quits the game
+function Notebook:OnRemoveEntity()
+    print("KK-TEST> Function 'Notebook:OnRemoveEntity' is invoked.")
+    self:EndWriting()
+end
 
 function Notebook:Destroy()
+    print("KK-TEST> Function 'Notebook:Destroy' is invoked.")
     NotebookManager:RemoveBook(self)
 end
 
