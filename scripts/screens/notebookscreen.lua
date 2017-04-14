@@ -291,9 +291,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         --print("KK-TEST> OnTextInputted: "..self:GetText())
         MarkCurrent(self)
     end
-    self.edit_text.OnTextEntered = function()
-        self:OnControl(CONTROL_ACCEPT, false)
-    end
     -- @invalid in DS
     self.edit_text:SetHelpTextApply("")
     -- @invalid in DS
