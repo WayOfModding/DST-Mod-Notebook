@@ -22,8 +22,8 @@ local function SetPages(book, pages, marks)
     book.replica.notebook:SetPages(marks)
 end
 
-local function EndWriting(book, player)
-    book.replica.notebook:EndWriting(player)
+local function EndWriting(book)
+    book.replica.notebook:EndWriting()
 end
 
 local function GetPage(self, page)
@@ -110,7 +110,7 @@ local function onaccept(inst, doer, widget)
     end
 
     widget.edit_text:SetEditing(false)
-    EndWriting(inst, doer)
+    EndWriting(inst)
     widget:Close()
 end
 
@@ -128,7 +128,7 @@ local function oncancel(inst, doer, widget)
         return
     end
     
-    EndWriting(inst, doer)
+    EndWriting(inst)
 
     if widget.config.cancelbtn.cb ~= nil then
         widget.config.cancelbtn.cb(inst, doer, widget)

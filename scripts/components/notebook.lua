@@ -40,9 +40,10 @@ local Notebook = Class(function(self, inst)
     --print("KK-TEST(notebook)>", dumptable(self.inst))
     
     self.pages = {}
+    self.writer = nil
     
     self.onclosepopups = function(doer)
-        self:EndWriting(doer)
+        self:EndWriting()
     end
     -- test
     -- To remove item from inventory will trigger 'exitlimbo'
@@ -112,8 +113,13 @@ end
 
 function Notebook:BeginWriting(doer)
     print("KK-TEST> Function 'Notebook:BeginWriting' is invoked.")
+    if self.writer ~= nil then
+        print("KK-TEST> Already writing!")
+        return
+    end
     -- Notify component update
     self.inst:StartUpdatingComponent(self)
+    self.writer = doer
     
     -- Trigger when the pop-up window is closed
     self.inst:ListenForEvent("ms_closepopups", self.onclosepopups, doer)
@@ -131,15 +137,18 @@ function Notebook:BeginWriting(doer)
     end
 end
 
-function Notebook:EndWriting(doer)
+function Notebook:EndWriting()
     print("KK-TEST> Function 'Notebook:EndWriting' is invoked.")
-    doer = doer or (self.inst.components.inventoryitem
-        and self.inst.components.inventoryitem.owner
-        or ThePlayer)
+    if self.writer == nil then
+        print("KK-TEST> Already NOT writing!")
+        return
+    end
     self.inst:StopUpdatingComponent(self)
     
-    self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, doer)
-    self.inst:RemoveEventCallback("onremove", self.onclosepopups, doer)
+    self.inst:RemoveEventCallback("ms_closepopups", self.onclosepopups, self.writer)
+    self.inst:RemoveEventCallback("onremove", self.onclosepopups, self.writer)
+    
+    self.writer = nil
 end
 
 function Notebook:SetPages(pages)
@@ -157,6 +166,24 @@ function Notebook:SetPages(pages)
     setpages(self, pages)
     return true
 end
+
+--------------------------------------------------------------------------
+--Check for auto-closing conditions
+--------------------------------------------------------------------------
+
+function Writeable:OnUpdate(dt)
+    if self.writer == nil then
+        self.inst:StopUpdatingComponent(self)
+    elseif (self.writer.components.rider ~= nil
+            and self.writer.components.rider:IsRiding())
+        or not (self.writer:IsNear(self.inst, 3)
+            and CanEntitySeeTarget(self.writer, self.inst))
+    then
+        self:EndWriting()
+    end
+end
+
+--------------------------------------------------------------------------
 
 -- Invoked when this component is removed from entity
 function Notebook:OnRemoveFromEntity()

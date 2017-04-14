@@ -126,10 +126,10 @@ function Notebook:BeginWriting(doer)
     end
 end
 
-function Notebook:EndWriting(doer)
+function Notebook:EndWriting()
     print("KK-TEST> Function Notebook(replica):EndWriting() is invoked" .. getside() .. ".")
     if self.inst.components.notebook ~= nil then
-        return self.inst.components.notebook:EndWriting(doer)
+        return self.inst.components.notebook:EndWriting()
     end
 end
 
