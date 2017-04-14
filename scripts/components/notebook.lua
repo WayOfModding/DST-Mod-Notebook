@@ -43,7 +43,9 @@ local Notebook = Class(function(self, inst)
     self.writer = nil
     
     self.onclosepopups = function(doer)
-        self:EndWriting()
+        if doer == self.writer then
+            self:EndWriting()
+        end
     end
     -- test
     -- To remove item from inventory will trigger 'exitlimbo'
@@ -205,7 +207,7 @@ end
 
 function Notebook:Destroy()
     print("KK-TEST> Function 'Notebook:Destroy' is invoked.")
-    NotebookManager:RemoveBook(self)
+    --NotebookManager:RemoveBook(self)
 end
 
 return Notebook
