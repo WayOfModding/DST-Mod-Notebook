@@ -173,7 +173,7 @@ end
 --Check for auto-closing conditions
 --------------------------------------------------------------------------
 
-function Writeable:OnUpdate(dt)
+function Notebook:OnUpdate(dt)
     if self.writer == nil then
         self.inst:StopUpdatingComponent(self)
     elseif (self.writer.components.rider ~= nil
