@@ -144,8 +144,8 @@ local config =
     menuoffset = Vector3(6, -250, 0),
 
     cancelbtn = { text = STRINGS.NOTEBOOK.BUTTON_CANCEL, cb = nil, control = CONTROL_CANCEL },
-    middlebtn = { text = STRINGS.NOTEBOOK.BUTTON_CLEAR, cb = nil, control = CONTROL_MENU_MISC_2 },
-    acceptbtn = { text = STRINGS.NOTEBOOK.BUTTON_ACCEPT, cb = nil, control = CONTROL_MENU_MISC_1 },
+    middlebtn = { text = STRINGS.NOTEBOOK.BUTTON_CLEAR, cb = nil, control = CONTROL_MENU_MISC_1 },
+    acceptbtn = { text = STRINGS.NOTEBOOK.BUTTON_ACCEPT, cb = nil, control = CONTROL_ACCEPT },
     
     lastpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_LASTPAGE, cb = nil, control = CONTROL_ZOOM_IN },
     nextpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_NEXTPAGE, cb = nil, control = CONTROL_ZOOM_OUT },
