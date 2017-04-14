@@ -201,10 +201,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
 
-    --self.edit_text_bg = self.root:AddChild(Image("images/textboxes.xml", "textbox_long.tex"))
-    --self.edit_text_bg:SetPosition(0, 5, 0)
-    --self.edit_text_bg:ScaleToSize(480, 50)
-
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     -- @invalid in DS
@@ -213,7 +209,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:SetRegionSize(800, 480)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
     self.edit_text:SetVAlign(ANCHOR_MIDDLE)
-    --self.edit_text:SetFocusedImage(self.edit_text_bg, "images/textboxes.xml", "textbox_long_over.tex", "textbox_long.tex")
     self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
     -- @invalid in DS
     self.edit_text:EnableWordWrap(true)
