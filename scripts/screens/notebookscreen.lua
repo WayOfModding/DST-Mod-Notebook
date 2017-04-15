@@ -7,6 +7,8 @@ local UIAnim = require "widgets/uianim"
 local ImageButton = require "widgets/imagebutton"
 local json = require "json"
 
+require("util/debug")
+
 -- Constants
 local TITLE_LENGTH_LIMIT    = 16
 local TEXT_LENGTH_LIMIT     = 256
@@ -88,14 +90,6 @@ local function NextPage(self)
         UpdatePage(self, newpage)
     end
     self.edit_text:SetEditing(true)
-end
-
-local function onclose(widget)
-    print("KK-TEST> title: " .. tostring(widget.pages[0]))
-    print("KK-TEST> dumptable(pages):")
-    dumptable(widget.pages)
-    print("KK-TEST> dumptable(marks):")
-    dumptable(widget.marks)
 end
 
 local function onaccept(inst, doer, widget)
@@ -227,7 +221,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.page = 0
     -- Load all pages into this widget
     self.pages = writeable.replica.notebook:GetPages()
-    dumptable(self.pages)
     self.marks = {}
     
     -- Initialize text area
@@ -371,6 +364,10 @@ function WriteableWidget:SetValidChars(chars)
 end
 
 function WriteableWidget:OnControl(control, down)
+    print(string.format(
+        "KK-TEST> Function \"WriteableWidget:OnControl('%s', '%s')\" is invoked!",
+        GetControlName(control), tostring(down)
+    ))
     if WriteableWidget._base.OnControl(self,control, down) then return true end
 
     -- gjans: This makes it so that if the text box loses focus and you click
