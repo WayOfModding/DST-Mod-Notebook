@@ -1,3 +1,5 @@
 # 已知 BUG
     - Cancel 按钮没用
     - inst.components.inspectable.getspecialdescription
+    - 长文本粘贴处理
+        - 试着测试粘贴长文本时，TextEdit:OnTextInput的反应

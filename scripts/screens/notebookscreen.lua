@@ -29,28 +29,14 @@ local function EndWriting(book)
 end
 
 local function GetPage(self, page)
-    local res = self.pages[page] or ""
+    local res = self.pages[page]
     --print("KK-TEST> Function Screen:GetPage(" .. tostring(page) .. ") returns \"" .. res .. "\".")
-    return res
+    return res or ""
 end
 local function GetTitle(self)
     local res = GetPage(self, 0)
     --print("KK-TEST> Function Screen:GetTitle() returns \"" .. res .. "\".")
     return res
-end
-local function OnPageUpdated(self, page)
-    --print("KK-TEST> Function Screen:OnPageUpdated(" .. tostring(page) .. ") is invoked.")
-    local res = GetPage(self, page) or ""
-    if page == 0 then
-        self.edit_text:SetHAlign(ANCHOR_MIDDLE)
-        self.edit_text:SetVAlign(ANCHOR_MIDDLE)
-        self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
-    else
-        self.edit_text:SetHAlign(ANCHOR_LEFT)
-        self.edit_text:SetVAlign(ANCHOR_TOP)
-        self.edit_text:SetTextLengthLimit(TEXT_LENGTH_LIMIT)
-    end
-    self.edit_text:SetString(res)
 end
 local function MarkPage(self, page)
     --print("KK-TEST> Function Screen:MarkPage(" .. tostring(page) .. ") is invoked.")
@@ -65,7 +51,18 @@ end
 local function UpdatePage(self, page)
     --print("KK-TEST> Function Screen:UpdatePage(" .. tostring(page) .. ") is invoked.")
     self.page = page
-    OnPageUpdated(self, page)
+    
+    local res = GetPage(self, page)
+    if page == 0 then
+        self.edit_text:SetHAlign(ANCHOR_MIDDLE)
+        self.edit_text:SetVAlign(ANCHOR_MIDDLE)
+        self.edit_text:SetTextLengthLimit(TITLE_LENGTH_LIMIT)
+    else
+        self.edit_text:SetHAlign(ANCHOR_LEFT)
+        self.edit_text:SetVAlign(ANCHOR_TOP)
+        self.edit_text:SetTextLengthLimit(TEXT_LENGTH_LIMIT)
+    end
+    self:OverrideText(res)
 end
 local function LastPage(self)
     --print("KK-TEST> Function Screen:LastPage() is invoked.")
@@ -99,10 +96,6 @@ local function onaccept(inst, doer, widget)
     
     SetPages(inst, widget.pages, widget.marks)
 
-    if widget.config.acceptbtn.cb ~= nil then
-        widget.config.acceptbtn.cb(inst, doer, widget)
-    end
-
     widget.edit_text:SetEditing(false)
     EndWriting(inst)
     widget:Close()
@@ -113,7 +106,7 @@ local function onmiddle(inst, doer, widget)
         return
     end
     
-    widget.edit_text:SetString("")
+    widget:OverrideText("")
     widget.edit_text:SetEditing(true)
 end
 
@@ -122,25 +115,20 @@ local function oncancel(inst, doer, widget)
         return
     end
     
+    widget.edit_text:SetEditing(false)
     EndWriting(inst)
-
-    if widget.config.cancelbtn.cb ~= nil then
-        widget.config.cancelbtn.cb(inst, doer, widget)
-    end
-
     widget:Close()
 end
 
 local config =
 {
     menuoffset = Vector3(6, -250, 0),
-
-    cancelbtn = { text = STRINGS.NOTEBOOK.BUTTON_CANCEL, cb = nil, control = CONTROL_CANCEL },
-    middlebtn = { text = STRINGS.NOTEBOOK.BUTTON_CLEAR, cb = nil, control = CONTROL_MENU_MISC_1 },
-    acceptbtn = { text = STRINGS.NOTEBOOK.BUTTON_ACCEPT, cb = nil, control = CONTROL_ACCEPT },
     
-    lastpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_LASTPAGE, cb = nil, control = CONTROL_ZOOM_IN },
-    nextpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_NEXTPAGE, cb = nil, control = CONTROL_ZOOM_OUT },
+    cancelbtn   = { text = STRINGS.NOTEBOOK.BUTTON_CANCEL,      control = CONTROL_CANCEL        },
+    middlebtn   = { text = STRINGS.NOTEBOOK.BUTTON_CLEAR,       control = CONTROL_MENU_MISC_1   },
+    acceptbtn   = { text = STRINGS.NOTEBOOK.BUTTON_ACCEPT,      control = CONTROL_ACCEPT        },
+    lastpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_LASTPAGE,    control = CONTROL_ZOOM_IN       },
+    nextpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_NEXTPAGE,    control = CONTROL_ZOOM_OUT      },
 }
 
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
@@ -148,7 +136,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 
     self.owner = owner
     self.writeable = writeable
-    self.config = config
 
     self.isopen = false
 
@@ -159,7 +146,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self:SetPosition(0, 0, 0)
     self:SetVAnchor(ANCHOR_MIDDLE)
     self:SetHAnchor(ANCHOR_MIDDLE)
-
+    
     self.scalingroot = self:AddChild(Widget("writeablewidgetscalingroot"))
     self.scalingroot:SetScale(TheFrontEnd:GetHUDScale())
     self.inst:ListenForEvent("continuefrompause", function()
@@ -175,6 +162,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 
     self.root = self.scalingroot:AddChild(Widget("writeablewidgetroot"))
     self.root:SetScale(.6, .6, .6)
+    self.root:SetPosition(0, 150, 0)
 
     -- Click on the screen will quit Notebook
     self.black = self.root:AddChild(Image("images/global.xml", "square.tex"))
@@ -188,13 +176,10 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         print("KK-TEST> Widget 'black' is busted.")
         oncancel(self.writeable, self.owner, self)
     end
-
-    self.bganim = self.root:AddChild(UIAnim())
-    self.bganim:SetScale(1, 1, 1)
-    -- Frame
+    
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
-
+    
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     -- @invalid in DS
@@ -224,47 +209,64 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.marks = {}
     
     -- Initialize text area
-    local title = GetTitle(self)
-    self.edit_text:SetString(title)
-    self.edit_text:SetFocus()
+    self:OverrideText(GetTitle(self))
     -------------------------------------------------------------------------------
     -- Buttons
     -------------------------------------------------------------------------------
     self.buttons = {}
     -- Cancel
-    table.insert(self.buttons, { text = config.cancelbtn.text, cb = function()
-        print("KK-TEST> Button 'Cancel' is pressed.")
-        oncancel(self.writeable, self.owner, self)
-    end, control = config.cancelbtn.control })
+    table.insert(self.buttons, {
+        text = config.cancelbtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Cancel' is pressed.")
+            oncancel(self.writeable, self.owner, self)
+        end,
+        control = config.cancelbtn.control
+    })
     -- Clear
-    table.insert(self.buttons, { text = config.middlebtn.text, cb = function()
-        print("KK-TEST> Button 'Clear' is pressed.")
-        onmiddle(self.writeable, self.owner, self)
-        MarkCurrent(self)
-    end, control = config.middlebtn.control })
+    table.insert(self.buttons, {
+        text = config.middlebtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Clear' is pressed.")
+            onmiddle(self.writeable, self.owner, self)
+            MarkCurrent(self)
+        end,
+        control = config.middlebtn.control
+    })
     -- Accept
-    table.insert(self.buttons, { text = config.acceptbtn.text, cb = function()
-        print("KK-TEST> Button 'Accept' is pressed.")
-        onaccept(self.writeable, self.owner, self)
-    end, control = config.acceptbtn.control })
+    table.insert(self.buttons, {
+        text = config.acceptbtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Accept' is pressed.")
+            onaccept(self.writeable, self.owner, self)
+        end,
+        control = config.acceptbtn.control
+    })
     -- Last Page
-    table.insert(self.buttons, { text = config.lastpagebtn.text, cb = function()
-        print("KK-TEST> Button 'Last Page' is pressed.")
-        LastPage(self)
-    end, control = config.lastpagebtn.control })
+    table.insert(self.buttons, {
+        text = config.lastpagebtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Last Page' is pressed.")
+            LastPage(self)
+        end,
+        control = config.lastpagebtn.control
+    })
     -- Next Page
-    table.insert(self.buttons, { text = config.nextpagebtn.text, cb = function()
-        print("KK-TEST> Button 'Next Page' is pressed.")
-        NextPage(self)
-    end, control = config.nextpagebtn.control })
-
+    table.insert(self.buttons, {
+        text = config.nextpagebtn.text,
+        cb = function()
+            print("KK-TEST> Button 'Next Page' is pressed.")
+            NextPage(self)
+        end,
+        control = config.nextpagebtn.control
+    })
+    
     for i, v in ipairs(self.buttons) do
         if v.control ~= nil then
             self.edit_text:SetPassControlToScreen(v.control, true)
         end
     end
-    -------------------------------------------------------------------------------
-
+    
     local menuoffset = config.menuoffset or Vector3(0, 0, 0)
     if TheInput:ControllerAttached() then
         local spacing = 150
@@ -278,7 +280,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         self.menu:SetTextSize(35)
         self.menu:SetPosition(menuoffset.x - .5 * spacing * (#self.buttons - 1), menuoffset.y, menuoffset.z)
     end
-
+    -------------------------------------------------------------------------------
     self.edit_text:OnControl(CONTROL_ACCEPT, false)
     self.edit_text.OnTextInputted = function()
         --print("KK-TEST> OnTextInputted: "..self:GetText())
@@ -293,16 +295,6 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     -- WHAT?
     self.default_focus = self.edit_text
 
-    if config.bgatlas ~= nil and config.bgimage ~= nil then
-        self.bgimage:SetTexture(config.bgatlas, config.bgimage)
-    end
-
-    if config.pos ~= nil then
-        self.root:SetPosition(config.pos)
-    else
-        self.root:SetPosition(0, 150, 0)
-    end
-
     --if config.buttoninfo ~= nil then
         --if doer ~= nil and doer.components.playeractionpicker ~= nil then
             --doer.components.playeractionpicker:RegisterContainer(container)
@@ -312,55 +304,69 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.isopen = true
     self:Show()
 
-    if self.bgimage.texture then
-        self.bgimage:Show()
-    else
-        self.bganim:GetAnimState():PlayAnimation("open")
+    if self.bgimage then
+        if self.bgimage.texture then
+            self.bgimage:Show()
+        end
     end
 end)
 
 function WriteableWidget:OnBecomeActive()
+    print("KK-TEST> Function 'WriteableWidget:OnBecomeActive' is invoked!")
     self._base.OnBecomeActive(self)
-    self.edit_text:SetFocus()
-    self.edit_text:SetEditing(true)
+    if self.edit_text then
+        self.edit_text:SetEditing(true)
+    end
 end
 
 function WriteableWidget:Close()
     if self.isopen then
-        --onclose(self)
-        --if self.container ~= nil then
-            --if self.owner ~= nil and self.owner.components.playeractionpicker ~= nil then
-                --self.owner.components.playeractionpicker:UnregisterContainer(self.container)
-            --end
-        --end
-
         self.writeable = nil
 
-        if self.bgimage.texture then
-            self.bgimage:Hide()
-        else
-            self.bganim:GetAnimState():PlayAnimation("close")
+        if self.bgimage then
+            if self.bgimage.texture then
+                self.bgimage:Hide()
+            end
         end
-
+        
+        if self.black then
+            self.black:Kill()
+        end
+        if self.edit_text then
+            self.edit_text:Kill()
+        end
+        if self.menu then
+            self.menu:Kill()
+        end
+        if self.bgimage then
+            self.bgimage:Kill()
+        end
         self:KillAllChildren()
-
+        
         self.isopen = false
-
+        
         self.inst:DoTaskInTime(.3, function() TheFrontEnd:PopScreen(self) end)
     end
 end
 
+--[[
+Call stack 'WriteableWidget:OverrideText'
+* TextEdit:SetString(str=text)
+    * TextEdit:FormatString(str)
+    * TextEditWidget:SetString(str)             -- native call
+* TextEdit:SetEditing(editing=true)
+    * TextEdit:SetAllowNewline(self.allow_newline)
+    * TextWidget:ShowEditCursor(self.editing)   -- native call
+--]]
 function WriteableWidget:OverrideText(text)
-    self.edit_text:SetString(text)
-    self.edit_text:SetFocus()
+    if self.edit_text then
+        self.edit_text:SetString(text)
+        self.edit_text:SetEditing(true)
+    end
 end
 
 function WriteableWidget:GetText()
-    return self.edit_text:GetString()
-end
-
-function WriteableWidget:SetValidChars(chars)
-    self.edit_text:SetCharacterFilter(chars)
+    return self.edit_text and self.edit_text:GetString() or ""
 end
 
 function WriteableWidget:OnControl(control, down)
@@ -380,7 +386,7 @@ function WriteableWidget:OnControl(control, down)
             --return true
         --end
     --end
-    if not down then
+    if not down and self.buttons then
         for i, v in ipairs(self.buttons) do
             if control == v.control and v.cb ~= nil then
                 v.cb()
@@ -393,15 +399,18 @@ function WriteableWidget:OnControl(control, down)
     end
 end
 
-local function ShowWriteableWidget(player, playerhud, writeable)
-    assert(player == playerhud.owner, "KK-TEST> player != playerhud.owner")
-    local screen = WriteableWidget(playerhud.owner, writeable)
+local function ShowWriteableWidget(player, playerhud, book)
+    local screen = WriteableWidget(playerhud.owner, book)
+    if screen == nil then
+        return false, "Fail to make screen!"
+    end
     playerhud:OpenScreenUnderPause(screen)
-    if TheFrontEnd:GetActiveScreen() == screen then
+    -- TODO is this necessary? @see WriteableWidget:OnBecomeActive
+    if TheFrontEnd:GetActiveScreen() == screen and screen.edit_text then
         -- Have to set editing AFTER pushscreen finishes.
         screen.edit_text:SetEditing(true)
     end
-    return screen
+    return true, "NotebookScreen is created successfully!"
 end
 
 local function MakeWriteableWidget(inst, doer)
