@@ -131,6 +131,9 @@ local config =
     nextpagebtn = { text = STRINGS.NOTEBOOK.BUTTON_NEXTPAGE,    control = CONTROL_ZOOM_OUT      },
 }
 
+--[[
+@see FrontEnd:OnMouseButton
+--]]
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
     Screen._ctor(self, "SignWriter")
 
@@ -180,6 +183,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
     
+    -- TextEdit.ctor(font, size, text, colour)
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
     -- @invalid in DS
@@ -369,6 +373,39 @@ function WriteableWidget:GetText()
     return self.edit_text and self.edit_text:GetString() or ""
 end
 
+--[[
+# TextEdit:OnTextEntered(self:GetString())
+    # TextEdit:OnProcess()
+        # TextEdit:OnControl(control, down)
+        # TextEdit:OnRawKey(key, down)
+--]]
+--[[
+@see Widget:OnControl(control, down)
+When a widget's OnControl is invoked,
+    1) it returns false immediately,
+    if it is not focused;
+    2) it will pass control state to each
+    of its children that is focused;
+    3) it pass valid control state to its
+    parent_scroll_list
+    4) return false;
+--]]
+--[[
+@see Widget:SetFocus
+@see Widget:SetFocusFromChild
+# Focus Chain
+    When a widget is set focused, it will set
+    its parent focused, and defocus all of
+    its focused siblings.
+    This procedure goes on and on until
+    it reaches the root widget.
+# Focus Path
+    A widget will be set focused when:
+    1) its 'SetFocus' is invoked directly;
+    2) it is configured as 'focus_forward'
+    of another widget whose 'SetFocus' gets
+    invoked just now;
+--]]
 function WriteableWidget:OnControl(control, down)
     print(string.format(
         "KK-TEST> Function \"WriteableWidget:OnControl('%s', '%s')\" is invoked!",
@@ -399,6 +436,16 @@ function WriteableWidget:OnControl(control, down)
     end
 end
 
+--[[
+@see screens/playerhud.lua
+--]]
+--[[
+Call stack
+* PlayerHud:OpenScreenUnderPause(screen)
+    * FrontEnd:PushScreen(screen)
+        * FrontEnd:SetForceProcessTextInput(false)
+        * table.insert(self.screenstack, screen)
+--]]
 local function ShowWriteableWidget(player, playerhud, book)
     local screen = WriteableWidget(playerhud.owner, book)
     if screen == nil then
@@ -413,6 +460,9 @@ local function ShowWriteableWidget(player, playerhud, book)
     return true, "NotebookScreen is created successfully!"
 end
 
+--[[
+@see prefabs/player_common.lua
+--]]
 local function MakeWriteableWidget(inst, doer)
     if inst and inst.prefab == "book_notebook" then
         if doer and doer.HUD then
