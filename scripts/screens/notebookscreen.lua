@@ -337,19 +337,12 @@ function WriteableWidget:Close()
             end
         end
         
-        if self.black then
-            self.black:Kill()
-        end
-        if self.edit_text then
-            self.edit_text:Kill()
-        end
         if self.menu then
-            self.menu:Kill()
+            self.menu:Clear()
         end
-        if self.bgimage then
-            self.bgimage:Kill()
-        end
-        self:KillAllChildren()
+        self.root:KillAllChildren()
+        self.root:Kill()
+        self.scalingroot:Kill()
         
         self.isopen = false
         
