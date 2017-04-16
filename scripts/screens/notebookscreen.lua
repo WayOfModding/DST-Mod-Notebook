@@ -14,12 +14,15 @@ local TITLE_LENGTH_LIMIT    = 16
 local TEXT_LENGTH_LIMIT     = 256
 
 local function SetPages(book, pages, marks)
-    --print("KK-TEST> Function \"SetPages\"(@notebookscreen) is invoked.")
+    print("KK-TEST> Function \"SetPages\" is invoked in notebookscreen.lua.")
     
     -- Filter pages that ain't modified
+    print("----------- SetPages -----------")
     for page, mark in pairs(marks) do
         marks[page] = pages[page]
+        print(page, pages[page])
     end
+    print("--------------------------------")
     
     book.replica.notebook:SetPages(marks)
 end
@@ -103,7 +106,7 @@ local function onaccept(inst, doer, widget)
 end
 
 local function onmiddle(inst, doer, widget)
-    print("Function \"onmiddle\" is invoked in notebookscreen.lua.")
+    print("KK-TEST> Function \"onmiddle\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -113,7 +116,7 @@ local function onmiddle(inst, doer, widget)
 end
 
 local function oncancel(inst, doer, widget)
-    print("Function \"oncancel\" is invoked in notebookscreen.lua.")
+    print("KK-TEST> Function \"oncancel\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -430,14 +433,21 @@ function WriteableWidget:OnControl(control, down)
             --return true
         --end
     --end
-    if not down and self.buttons then
-        for i, v in ipairs(self.buttons) do
-            if control == v.control and v.cb ~= nil then
-                v.cb()
-                return true
-            end
-        end
-        if control == CONTROL_OPEN_DEBUG_CONSOLE then
+    if control == CONTROL_OPEN_DEBUG_CONSOLE then
+        return true
+    end
+    if control == CONTROL_FORCE_INSPECT then
+        return false
+    end
+    if down then
+        return false
+    end
+    if self.buttons == nil then
+        return false
+    end
+    for i, v in ipairs(self.buttons) do
+        if control == v.control and v.cb ~= nil then
+            v.cb()
             return true
         end
     end
