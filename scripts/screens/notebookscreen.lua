@@ -14,7 +14,7 @@ local TITLE_LENGTH_LIMIT    = 16
 local TEXT_LENGTH_LIMIT     = 256
 
 local function SetPages(book, pages, marks)
-    --print("KK-TEST> Function 'SetPages'(@notebookscreen) is invoked.")
+    --print("KK-TEST> Function \"SetPages\"(@notebookscreen) is invoked.")
     
     -- Filter pages that ain't modified
     for page, mark in pairs(marks) do
@@ -90,7 +90,7 @@ local function NextPage(self)
 end
 
 local function onaccept(inst, doer, widget)
-    print("Function 'onaccept' is invoked in notebookscreen.lua.")
+    print("Function \"onaccept\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -103,7 +103,7 @@ local function onaccept(inst, doer, widget)
 end
 
 local function onmiddle(inst, doer, widget)
-    print("Function 'onmiddle' is invoked in notebookscreen.lua.")
+    print("Function \"onmiddle\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -113,7 +113,7 @@ local function onmiddle(inst, doer, widget)
 end
 
 local function oncancel(inst, doer, widget)
-    print("Function 'oncancel' is invoked in notebookscreen.lua.")
+    print("Function \"oncancel\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -179,7 +179,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
     self.black:SetTint(0, 0, 0, 0)
     self.black.OnMouseButton = function()
-        print("KK-TEST> Widget 'black' is busted.")
+        print("KK-TEST> Widget 'black' is clicked.")
         oncancel(self.writeable, self.owner, self)
     end
     
@@ -320,7 +320,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
 end)
 
 function WriteableWidget:OnBecomeActive()
-    print("KK-TEST> Function 'WriteableWidget:OnBecomeActive' is invoked!")
+    print("KK-TEST> Function \"WriteableWidget:OnBecomeActive\" is invoked!")
     self._base.OnBecomeActive(self)
     if self.edit_text then
         self.edit_text:SetEditing(true)
@@ -328,6 +328,7 @@ function WriteableWidget:OnBecomeActive()
 end
 
 function WriteableWidget:Close()
+    print("KK-TEST> Function \"WriteableWidget:Close\" is invoked!")
     if self.isopen then
         self.writeable = nil
 
@@ -368,6 +369,7 @@ Call stack 'WriteableWidget:OverrideText'
     * TextWidget:ShowEditCursor(self.editing)   -- native call
 --]]
 function WriteableWidget:OverrideText(text)
+    print("KK-TEST> Function \"WriteableWidget:OverrideText\" is invoked!")
     if self.edit_text then
         self.edit_text:SetString(text)
         self.edit_text:SetEditing(true)

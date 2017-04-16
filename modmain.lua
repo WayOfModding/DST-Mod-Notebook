@@ -190,7 +190,7 @@ local RPC_HANDLERS =
         --  * book:     instance of prefab 'book_notebook'
         --  * pages:    string of pages table serialized by json
         SetPages = function(player, book, pages)
-            print("KK-TEST> RPC handler 'SetPages' is invoked.")
+            --print("KK-TEST> RPC handler 'SetPages' is invoked.")
             if not (checkentity(book)
                 and checkstring(pages))
             then

@@ -10,7 +10,7 @@ local function getside()
 end
 
 local function SendRPC(namespace, name, ...)
-    print("KK-TEST> SendRPC:", ...)
+    --print("KK-TEST> SendRPC:", ...)
     local id_table =
     {
         namespace = namespace,
@@ -20,10 +20,10 @@ local function SendRPC(namespace, name, ...)
 end
 
 local function setpages(self, pages)
-    print("KK-TEST> Function 'setpages' is invoked.")
+    --print("KK-TEST> Function 'setpages' is invoked.")
     -- Master Sim stores notebook data in 'notebook' COMPONENT instead REPLICA
     for page, text in pairs(pages) do
-        print("KK-TEST> Update page <" .. type(page) .. ">" .. tostring(page) .. "<" .. type(text) .. ">\"" .. text .. "\"")
+        --print("KK-TEST> Update page <" .. type(page) .. ">" .. tostring(page) .. "<" .. type(text) .. ">\"" .. text .. "\"")
         page = tonumber(page)
         self.pages[page] = text
     end
@@ -41,9 +41,9 @@ local Notebook = Class(function(self, inst)
         
         self.OnPagesDirty = function()
             local newpages = self.newpages:value()
-            print("KK-TEST> Page is dirty: \"" .. newpages .. "\"")
+            --print("KK-TEST> Page is dirty: \"" .. newpages .. "\"")
             if newpages == nil or newpages == "" or newpages == "{}" or newpages == "[]" then
-                print("KK-TEST> Invalid 'newpages'!")
+                --print("KK-TEST> Invalid 'newpages'!")
                 return false
             end
             newpages = json.decode(newpages)
@@ -67,7 +67,7 @@ function Notebook:GetDebugString()
 end
 
 function Notebook:SetPages(pages)
-    print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked" .. getside() .. ".")
+    --print("KK-TEST> Function 'Notebook(replica):SetPages' is invoked" .. getside() .. ".")
     if self.inst.components.notebook ~= nil then
         -- Host client
         self.inst.components.notebook:SetPages(pages)
@@ -82,13 +82,13 @@ function Notebook:SetPages(pages)
 end
 
 function Notebook:GetPages()
-    print("KK-TEST> Function Notebook(replica):SetPages() is invoked" .. getside() .. ".")
+    --print("KK-TEST> Function Notebook(replica):SetPages() is invoked" .. getside() .. ".")
     local res = nil
     if self.inst.components.notebook ~= nil then
-        print("KK-TEST> self.inst.components.notebook is found.")
+        --print("KK-TEST> self.inst.components.notebook is found.")
         res = self.inst.components.notebook.pages
     else
-        print("KK-TEST> self.inst.components.notebook is NOT found.")
+        --print("KK-TEST> self.inst.components.notebook is NOT found.")
         res = self.pages
     end
     assert(res ~= nil, "KK-TEST> An empty book is retrieved!")
@@ -101,12 +101,12 @@ local function GetPage(self, page)
 end
 
 function Notebook:GetTitle()
-    print("KK-TEST> Function Notebook(replica):GetTitle() is invoked" .. getside() .. ".")
+    --print("KK-TEST> Function Notebook(replica):GetTitle() is invoked" .. getside() .. ".")
     return GetPage(self, 0)
 end
 
 function Notebook:BeginWriting(doer)
-    print("KK-TEST> Function Notebook(replica):BeginWriting() is invoked" .. getside() .. ".")
+    --print("KK-TEST> Function Notebook(replica):BeginWriting() is invoked" .. getside() .. ".")
     --[[
     Function 'BeginWriting' is invoked on server side
     --]]
@@ -116,18 +116,18 @@ function Notebook:BeginWriting(doer)
     Function 'BeginWriting' is invoked on client side
     --]]
     elseif doer == nil then
-        return false, "KK-TEST> 'doer' is nil!"
+        return false, "'doer' is nil!"
     elseif doer ~= ThePlayer then
-        return false, "KK-TEST> Invalid doer! Expecting (" .. tostring(ThePlayer) .. "), but given (" .. tostring(doer) .. ")"
+        return false, "Invalid doer! Expecting (" .. tostring(ThePlayer) .. "), but given (" .. tostring(doer) .. ")"
     elseif doer.HUD == nil then
-        return false, "KK-TEST> Notebook:BeginWriting: 'doer.HUD' is nil"
+        return false, "Notebook:BeginWriting: 'doer.HUD' is nil"
     else
         return makescreen(self.inst, doer)
     end
 end
 
 function Notebook:EndWriting()
-    print("KK-TEST> Function Notebook(replica):EndWriting() is invoked" .. getside() .. ".")
+    --print("KK-TEST> Function Notebook(replica):EndWriting() is invoked" .. getside() .. ".")
     if self.inst.components.notebook ~= nil then
         return self.inst.components.notebook:EndWriting()
     end
