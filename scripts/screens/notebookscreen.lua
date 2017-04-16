@@ -90,6 +90,7 @@ local function NextPage(self)
 end
 
 local function onaccept(inst, doer, widget)
+    print("Function 'onaccept' is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -102,6 +103,7 @@ local function onaccept(inst, doer, widget)
 end
 
 local function onmiddle(inst, doer, widget)
+    print("Function 'onmiddle' is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -111,6 +113,7 @@ local function onmiddle(inst, doer, widget)
 end
 
 local function oncancel(inst, doer, widget)
+    print("Function 'oncancel' is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
@@ -271,6 +274,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         end
     end
     
+    -- @see widgets/menu.lua
     local menuoffset = config.menuoffset or Vector3(0, 0, 0)
     if TheInput:ControllerAttached() then
         local spacing = 150
