@@ -356,7 +356,15 @@ Call stack 'WriteableWidget:OverrideText'
     * TextEdit:FormatString(str)
     * TextEditWidget:SetString(str)             -- native call
 * TextEdit:SetEditing(editing=true)
-    * TextEdit:SetAllowNewline(self.allow_newline)
+    * TextEdit:SetFocus()
+    * TextEdit:DoSelectedImage()
+    * TheInput:EnableDebugToggle(false)
+    * FrontEnd:SetForceProcessTextInput(true, self)
+        -- @see <mod>/scripts/screens/notebookscreen.lua
+        -- self.edit_text:SetForceEdit(true)
+    * TextEdit:SetAllowNewline(true)
+        -- @see widgets/textedit
+        -- self.enable_accept_control = false
     * TextWidget:ShowEditCursor(self.editing)   -- native call
 --]]
 function WriteableWidget:OverrideText(text)
