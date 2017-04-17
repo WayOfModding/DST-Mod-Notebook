@@ -274,15 +274,23 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     
     assert(#self.menu.items == #buttons, "KK-TEST> Fail to create enough buttons.")
     for i, v in ipairs(self.menu.items) do
-        v:SetControl(buttons[i].control)
+        -- weird game design
+        v:SetControl(CONTROL_ACCEPT)
     end
     
     -------------------------------------------------------------------------------
-    self.edit_text:OnControl(CONTROL_ACCEPT, false)
     self.edit_text.OnTextInputted = function()
         --print("KK-TEST> OnTextInputted: "..self:GetText())
         MarkCurrent(self)
     end
+    self.edit_text:SetOnGainFocus(function()
+        print("KK-TEST> Widget 'edit_text' gains focus!")
+        self.edit_text:SetEditing(true)
+    end)
+    self.edit_text:SetOnLoseFocus(function()
+        print("KK-TEST> Widget 'edit_text' loses focus!")
+        self.edit_text:SetEditing(false)
+    end)
     -- @invalid in DS
     self.edit_text:SetHelpTextApply("")
     -- @invalid in DS
