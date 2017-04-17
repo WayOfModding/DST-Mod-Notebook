@@ -136,7 +136,7 @@ local config =
 @see FrontEnd:OnMouseButton
 --]]
 local WriteableWidget = Class(Screen, function(self, owner, writeable)
-    Screen._ctor(self, "SignWriter")
+    Screen._ctor(self, "NotebookScreen")
 
     self.owner = owner
     self.writeable = writeable
@@ -151,7 +151,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self:SetVAnchor(ANCHOR_MIDDLE)
     self:SetHAnchor(ANCHOR_MIDDLE)
     
-    self.scalingroot = self:AddChild(Widget("writeablewidgetscalingroot"))
+    self.scalingroot = self:AddChild(Widget("NotebookScreenScalingRoot"))
     self.scalingroot:SetScale(TheFrontEnd:GetHUDScale())
     self.inst:ListenForEvent("continuefrompause", function()
         if self.isopen then
@@ -164,7 +164,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         end
     end, owner.HUD.inst)
 
-    self.root = self.scalingroot:AddChild(Widget("writeablewidgetroot"))
+    self.root = self.scalingroot:AddChild(Widget("NotebookScreenRoot"))
     self.root:SetScale(.6, .6, .6)
     self.root:SetPosition(0, 150, 0)
 
