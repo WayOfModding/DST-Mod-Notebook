@@ -424,6 +424,10 @@ function NotebookScreen:OnControl(control, down)
         
     elseif control == CONTROL_TOGGLE_DEBUGRENDER then
         return false
+    
+    elseif self.edit_text.focus and self.edit_text:OnControl(control, down) then
+        print("KK-TEST> Start editing...")
+        return true
         
     elseif self.menu.focus then
         -- self.menu:ClearFocus()
