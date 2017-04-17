@@ -418,9 +418,6 @@ function NotebookScreen:OnControl(control, down)
     if down then
         print("KK-TEST> Ignore KeyDown/ButtonDown event!")
         return false
-    elseif not self.edit_text.focus then
-        print("KK-TEST> 'edit_text' is not focused!")
-        return false
     end
     
     for i, v in ipairs(self.menu.items) do
