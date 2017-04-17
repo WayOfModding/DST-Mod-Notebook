@@ -422,7 +422,9 @@ function NotebookScreen:OnControl(control, down)
     
     for i, v in ipairs(self.menu.items) do
         print("KK-TEST> Handling button [" .. tostring(i) .. "]!")
-        return v:OnControl(control, down)
+        if v:OnControl(control, down) then
+            return true
+        end
     end
     
     print("KK-TEST> No appropriate control is handled!")
