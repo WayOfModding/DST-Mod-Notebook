@@ -418,7 +418,7 @@ function NotebookScreen:OnControl(control, down)
     if NotebookScreen._base.OnControl(self, control, down) then return true end
     
     if down then
-        print("KK-TEST> Ignore control 'UP' event!")
+        print("KK-TEST> Ignore KeyDown/ButtonDown event!")
         return false
     elseif not self.edit_text.focus then
         print("KK-TEST> 'edit_text' is not focused!")
