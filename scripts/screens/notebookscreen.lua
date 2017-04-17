@@ -283,6 +283,12 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         --print("KK-TEST> OnTextInputted: "..self:GetText())
         MarkCurrent(self)
     end
+    self.edit_text.OnGainFocus = function(self)
+        print("KK-TEST> Widget 'edit_text' gains focus.")
+    end
+    self.edit_text.OnLoseFocus = function(self)
+        print("KK-TEST> Widget 'edit_text' loses focus.")
+    end
     -- @invalid in DS
     self.edit_text:SetHelpTextApply("")
     -- @invalid in DS
