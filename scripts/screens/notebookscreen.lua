@@ -98,7 +98,7 @@ local function onaccept(widget)
         return
     end
     
-    SetPages(self.writeable, widget.pages, widget.marks)
+    SetPages(widget.writeable, widget.pages, widget.marks)
     
     widget:Close()
 end
