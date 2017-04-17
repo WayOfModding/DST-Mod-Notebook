@@ -214,7 +214,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     self.marks = {}
     
     -- Initialize text area
-    self:OverrideText(GetTitle(self))
+    self:OverrideText(GetTitle(self), false)
     -------------------------------------------------------------------------------
     -- Buttons
     -------------------------------------------------------------------------------
@@ -363,11 +363,16 @@ Call stack 'NotebookScreen:OverrideText'
         -- self.enable_accept_control = false
     * TextWidget:ShowEditCursor(self.editing)   -- native call
 --]]
-function NotebookScreen:OverrideText(text)
+function NotebookScreen:OverrideText(text, focus)
     print("KK-TEST> Function \"NotebookScreen:OverrideText\" is invoked!")
+    if focus == nil then
+        focus = true
+    end
     if self.edit_text then
         self.edit_text:SetString(text)
-        self.edit_text:SetEditing(true)
+        if focus then
+            self.edit_text:SetEditing(true)
+        end
     end
 end
 
@@ -439,7 +444,7 @@ function NotebookScreen:OnControl(control, down)
     --end
     if down then
         return false
-    elseif self.buttons == nil then
+    elseif not self.edit_text.focus then
         return false
     end
     for i, v in ipairs(self.buttons) do
@@ -468,11 +473,6 @@ local function ShowWriteableWidget(player, playerhud, book)
         return false, "Fail to make screen!"
     end
     playerhud:OpenScreenUnderPause(screen)
-    -- TODO is this necessary? @see NotebookScreen:OnBecomeActive
-    if TheFrontEnd:GetActiveScreen() == screen and screen.edit_text then
-        -- Have to set editing AFTER pushscreen finishes.
-        screen.edit_text:SetEditing(true)
-    end
     return true, "NotebookScreen is created successfully!"
 end
 
