@@ -355,9 +355,7 @@ function NotebookScreen:OverrideText(text, focus)
     end
     if self.edit_text then
         self.edit_text:SetString(text)
-        if focus then
-            self.edit_text:SetEditing(true)
-        end
+        self.edit_text:SetEditing(focus)
     end
 end
 
