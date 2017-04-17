@@ -302,6 +302,9 @@ function NotebookScreen:Show()
     if self.bgimage and self.bgimage.texture then
         self.bgimage:Show()
     end
+    if self.edit_text then
+        self.edit_text.inst.TextWidget:ShowEditCursor(false)
+    end
 end
 
 function NotebookScreen:Close()
