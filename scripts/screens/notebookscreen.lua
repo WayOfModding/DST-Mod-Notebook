@@ -431,6 +431,8 @@ function NotebookScreen:OnControl(control, down)
     if down then
         print("KK-TEST> Ignore KeyDown/ButtonDown event!")
         return false
+    elseif control == CONTROL_TOGGLE_DEBUGRENDER then
+        return false
     end
     
     if self.menu.focus then
