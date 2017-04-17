@@ -421,8 +421,9 @@ function NotebookScreen:OnControl(control, down)
     end
     
     for i, v in ipairs(self.menu.items) do
-        print("KK-TEST> Handling button [" .. tostring(i) .. "]!")
+        print("KK-TEST> Handling button [" .. tostring(i) .. "]", v)
         if v:OnControl(control, down) then
+            print("KK-TEST> Handling button: Success!")
             return true
         end
     end
