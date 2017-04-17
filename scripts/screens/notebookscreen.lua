@@ -298,7 +298,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
 end)
 
 function NotebookScreen:Show()
-    NotebookScreen._base.Show()
+    NotebookScreen._base.Show(self)
     
     self.isopen = true
     if self.bgimage and self.bgimage.texture then
@@ -417,18 +417,22 @@ function NotebookScreen:OnControl(control, down)
         "KK-TEST> Function \"NotebookScreen:OnControl('%s', '%s')\" is invoked!",
         GetControlName(control), tostring(down)
     ))
-    if NotebookScreen._base.OnControl(self,control, down) then return true end
+    if NotebookScreen._base.OnControl(self, control, down) then return true end
     
     if down then
+        print("KK-TEST> Ignore control 'UP' event!")
         return false
     elseif not self.edit_text.focus then
+        print("KK-TEST> 'edit_text' is not focused!")
         return false
     end
     
     for i, v in ipairs(self.menu.items) do
-        v:OnControl(control, down)
+        print("KK-TEST> Handling button [" .. tostring(i) .. "]!")
+        return v:OnControl(control, down)
     end
     
+    print("KK-TEST> No appropriate control is handled!")
     return false
 end
 

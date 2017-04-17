@@ -29,7 +29,7 @@ STRINGS.NOTEBOOK    =
     BUTTON_LASTPAGE = "Last Page",
     BUTTON_NEXTPAGE = "Next Page",
 }
-
+------------------------------------------------------------------
 local Ingredient    = GLOBAL.Ingredient
 local RECIPETABS    = GLOBAL.RECIPETABS
 local TECH          = GLOBAL.TECH
