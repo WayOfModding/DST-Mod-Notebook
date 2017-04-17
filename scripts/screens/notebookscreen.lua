@@ -174,8 +174,6 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     -- TextEdit.ctor(font, size, text, colour)
     self.edit_text = self.root:AddChild(TextEdit(CODEFONT, 50, ""))
     self.edit_text:SetColour(0, 0, 0, 1)
-    -- @invalid in DS
-    self.edit_text:SetForceEdit(true)
     self.edit_text:SetPosition(0, 0, 0)
     self.edit_text:SetRegionSize(800, 480)
     self.edit_text:SetHAlign(ANCHOR_MIDDLE)
