@@ -276,6 +276,8 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     for i, v in ipairs(self.menu.items) do
         -- weird game design
         v:SetControl(CONTROL_ACCEPT)
+        -- @see Widget:SetFocusFromChild
+        v.parent = self.menu
     end
     
     -------------------------------------------------------------------------------
