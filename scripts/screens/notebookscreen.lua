@@ -92,18 +92,18 @@ local function NextPage(self)
     self.edit_text:SetEditing(true)
 end
 
-local function onaccept(inst, doer, widget)
+local function onaccept(widget)
     print("Function \"onaccept\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
     end
     
-    SetPages(inst, widget.pages, widget.marks)
+    SetPages(self.writeable, widget.pages, widget.marks)
     
     widget:Close()
 end
 
-local function onmiddle(inst, doer, widget)
+local function onmiddle(widget)
     print("KK-TEST> Function \"onmiddle\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
@@ -112,7 +112,7 @@ local function onmiddle(inst, doer, widget)
     widget:OverrideText("")
 end
 
-local function oncancel(inst, doer, widget)
+local function oncancel(widget)
     print("KK-TEST> Function \"oncancel\" is invoked in notebookscreen.lua.")
     if not widget.isopen then
         return
@@ -135,7 +135,7 @@ local config =
 --[[
 @see FrontEnd:OnMouseButton
 --]]
-local WriteableWidget = Class(Screen, function(self, owner, writeable)
+local NotebookScreen = Class(Screen, function(self, owner, writeable)
     Screen._ctor(self, "NotebookScreen")
 
     self.owner = owner
@@ -178,7 +178,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.black:SetTint(0, 0, 0, 0)
     self.black.OnMouseButton = function()
         print("KK-TEST> Widget 'black' is clicked.")
-        oncancel(self.writeable, self.owner, self)
+        oncancel(self)
     end
     
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
@@ -224,7 +224,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         text = config.cancelbtn.text,
         cb = function()
             print("KK-TEST> Button 'Cancel' is pressed.")
-            oncancel(self.writeable, self.owner, self)
+            oncancel(self)
         end,
         control = config.cancelbtn.control
     })
@@ -233,7 +233,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         text = config.middlebtn.text,
         cb = function()
             print("KK-TEST> Button 'Clear' is pressed.")
-            onmiddle(self.writeable, self.owner, self)
+            onmiddle(self)
             MarkCurrent(self)
         end,
         control = config.middlebtn.control
@@ -243,7 +243,7 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
         text = config.acceptbtn.text,
         cb = function()
             print("KK-TEST> Button 'Accept' is pressed.")
-            onaccept(self.writeable, self.owner, self)
+            onaccept(self)
         end,
         control = config.acceptbtn.control
     })
@@ -311,18 +311,18 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     end
 end)
 
-function WriteableWidget:OnBecomeActive()
-    print("KK-TEST> Function \"WriteableWidget:OnBecomeActive\" is invoked!")
+function NotebookScreen:OnBecomeActive()
+    print("KK-TEST> Function \"NotebookScreen:OnBecomeActive\" is invoked!")
     self._base.OnBecomeActive(self)
     if self.edit_text then
         self.edit_text:SetEditing(true)
     end
 end
 
-function WriteableWidget:Close()
-    print("KK-TEST> Function \"WriteableWidget:Close\" is invoked!")
+function NotebookScreen:Close()
+    print("KK-TEST> Function \"NotebookScreen:Close\" is invoked!")
     if self.isopen then
-        widget.edit_text:SetEditing(false)
+        self.edit_text:SetEditing(false)
         EndWriting(self.writeable)
         
         self.writeable = nil
@@ -347,7 +347,7 @@ function WriteableWidget:Close()
 end
 
 --[[
-Call stack 'WriteableWidget:OverrideText'
+Call stack 'NotebookScreen:OverrideText'
 * TextEdit:SetString(str=text)
     * TextEdit:FormatString(str)
     * TextEditWidget:SetString(str)             -- native call
@@ -363,15 +363,15 @@ Call stack 'WriteableWidget:OverrideText'
         -- self.enable_accept_control = false
     * TextWidget:ShowEditCursor(self.editing)   -- native call
 --]]
-function WriteableWidget:OverrideText(text)
-    print("KK-TEST> Function \"WriteableWidget:OverrideText\" is invoked!")
+function NotebookScreen:OverrideText(text)
+    print("KK-TEST> Function \"NotebookScreen:OverrideText\" is invoked!")
     if self.edit_text then
         self.edit_text:SetString(text)
         self.edit_text:SetEditing(true)
     end
 end
 
-function WriteableWidget:GetText()
+function NotebookScreen:GetText()
     return self.edit_text and self.edit_text:GetString() or ""
 end
 
@@ -420,12 +420,12 @@ When a widget's OnControl is invoked,
 CONTROL_PRIMARY:    Mouse Left Button
 CONTROL_SECONDARY:  Mouse Right Button
 --]]
-function WriteableWidget:OnControl(control, down)
+function NotebookScreen:OnControl(control, down)
     print(string.format(
-        "KK-TEST> Function \"WriteableWidget:OnControl('%s', '%s')\" is invoked!",
+        "KK-TEST> Function \"NotebookScreen:OnControl('%s', '%s')\" is invoked!",
         GetControlName(control), tostring(down)
     ))
-    if WriteableWidget._base.OnControl(self,control, down) then return true end
+    if NotebookScreen._base.OnControl(self,control, down) then return true end
 
     -- gjans: This makes it so that if the text box loses focus and you click
     -- on the bg, it presses accept. Kind of weird behaviour. I'm guessing
@@ -463,12 +463,12 @@ Call stack
         * table.insert(self.screenstack, screen)
 --]]
 local function ShowWriteableWidget(player, playerhud, book)
-    local screen = WriteableWidget(playerhud.owner, book)
+    local screen = NotebookScreen(playerhud.owner, book)
     if screen == nil then
         return false, "Fail to make screen!"
     end
     playerhud:OpenScreenUnderPause(screen)
-    -- TODO is this necessary? @see WriteableWidget:OnBecomeActive
+    -- TODO is this necessary? @see NotebookScreen:OnBecomeActive
     if TheFrontEnd:GetActiveScreen() == screen and screen.edit_text then
         -- Have to set editing AFTER pushscreen finishes.
         screen.edit_text:SetEditing(true)
