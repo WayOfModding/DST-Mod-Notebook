@@ -311,14 +311,6 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     end
 end)
 
-function NotebookScreen:OnBecomeActive()
-    print("KK-TEST> Function \"NotebookScreen:OnBecomeActive\" is invoked!")
-    self._base.OnBecomeActive(self)
-    if self.edit_text then
-        self.edit_text:SetEditing(true)
-    end
-end
-
 function NotebookScreen:Close()
     print("KK-TEST> Function \"NotebookScreen:Close\" is invoked!")
     if self.isopen then
