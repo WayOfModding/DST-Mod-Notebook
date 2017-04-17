@@ -197,7 +197,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     self.marks = {}
     
     -- Initialize text area
-    self:OverrideText(GetTitle(self), false)
+    self:OverrideText(GetTitle(self))
     -------------------------------------------------------------------------------
     -- Buttons
     -------------------------------------------------------------------------------
@@ -357,14 +357,10 @@ Call stack 'NotebookScreen:OverrideText'
         -- self.enable_accept_control = false
     * TextWidget:ShowEditCursor(self.editing)   -- native call
 --]]
-function NotebookScreen:OverrideText(text, focus)
+function NotebookScreen:OverrideText(text)
     print("KK-TEST> Function \"NotebookScreen:OverrideText\" is invoked!")
-    if focus == nil then
-        focus = true
-    end
     if self.edit_text then
         self.edit_text:SetString(text)
-        self.edit_text:SetEditing(focus)
     end
 end
 
