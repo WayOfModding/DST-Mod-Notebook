@@ -424,10 +424,12 @@ function NotebookScreen:OnControl(control, down)
         return false
         
     elseif self.menu.focus then
+        -- self.menu:ClearFocus()
         for i, v in ipairs(self.menu.items) do
             print("KK-TEST> Handling button [" .. tostring(i) .. "]", v)
             if v:OnControl(control, down) then
                 print("KK-TEST> Handling button: Success!")
+                self.menu:ClearFocus()
                 return true
             end
         end
