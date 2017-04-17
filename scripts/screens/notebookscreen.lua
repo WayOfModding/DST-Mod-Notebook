@@ -167,19 +167,6 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     self.root = self.scalingroot:AddChild(Widget("NotebookScreenRoot"))
     self.root:SetScale(.6, .6, .6)
     self.root:SetPosition(0, 150, 0)
-
-    -- Click on the screen will quit Notebook
-    self.black = self.root:AddChild(Image("images/global.xml", "square.tex"))
-    self.black:SetVRegPoint(ANCHOR_MIDDLE)
-    self.black:SetHRegPoint(ANCHOR_MIDDLE)
-    self.black:SetVAnchor(ANCHOR_MIDDLE)
-    self.black:SetHAnchor(ANCHOR_MIDDLE)
-    self.black:SetScaleMode(SCALEMODE_FILLSCREEN)
-    self.black:SetTint(0, 0, 0, 0)
-    self.black.OnMouseButton = function()
-        print("KK-TEST> Widget 'black' is clicked.")
-        oncancel(self)
-    end
     
     --self.bgimage = self.root:AddChild(Image("images/nbpanel.xml", "nbpanel.tex"))
     self.bgimage = self.root:AddChild(Image("images/scoreboard.xml", "scoreboard_frame.tex"))
