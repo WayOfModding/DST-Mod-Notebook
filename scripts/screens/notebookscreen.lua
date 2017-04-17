@@ -371,7 +371,6 @@ function WriteableWidget:OnBecomeActive()
     print("KK-TEST> Function 'WriteableWidget:OnBecomeActive' is invoked!")
     self._base.OnBecomeActive(self)
     if self.edit_text then
-        self.edit_text:SetFocus()
         self.edit_text:SetEditing(true)
     end
 end
@@ -452,7 +451,6 @@ local function ShowWriteableWidget(player, playerhud, book)
     -- TODO is this necessary? @see WriteableWidget:OnBecomeActive
     if TheFrontEnd:GetActiveScreen() == screen and screen.edit_text then
         -- Have to set editing AFTER pushscreen finishes.
-        screen.edit_text:SetFocus()
         screen.edit_text:SetEditing(true)
     end
     return true, "NotebookScreen is created successfully!"
