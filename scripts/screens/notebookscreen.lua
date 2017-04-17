@@ -416,8 +416,6 @@ function NotebookScreen:OnControl(control, down)
         "KK-TEST> Function \"NotebookScreen:OnControl('%s', '%s')\" is invoked!",
         GetControlName(control), tostring(down)
     ))
-    if NotebookScreen._base.OnControl(self, control, down) then return true end
-    
     if down then
         print("KK-TEST> Ignore KeyDown/ButtonDown event!")
         return false
