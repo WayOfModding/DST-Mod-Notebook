@@ -205,9 +205,9 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     -------------------------------------------------------------------------------
     -- Buttons
     -------------------------------------------------------------------------------
-    self.buttons = {}
+    local buttons = {}
     -- Cancel
-    table.insert(self.buttons, {
+    table.insert(buttons, {
         text = config.cancelbtn.text,
         cb = function()
             print("KK-TEST> Button 'Cancel' is pressed.")
@@ -216,7 +216,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         control = config.cancelbtn.control
     })
     -- Clear
-    table.insert(self.buttons, {
+    table.insert(buttons, {
         text = config.middlebtn.text,
         cb = function()
             print("KK-TEST> Button 'Clear' is pressed.")
@@ -226,7 +226,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         control = config.middlebtn.control
     })
     -- Accept
-    table.insert(self.buttons, {
+    table.insert(buttons, {
         text = config.acceptbtn.text,
         cb = function()
             print("KK-TEST> Button 'Accept' is pressed.")
@@ -235,7 +235,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         control = config.acceptbtn.control
     })
     -- Last Page
-    table.insert(self.buttons, {
+    table.insert(buttons, {
         text = config.lastpagebtn.text,
         cb = function()
             print("KK-TEST> Button 'Last Page' is pressed.")
@@ -244,7 +244,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         control = config.lastpagebtn.control
     })
     -- Next Page
-    table.insert(self.buttons, {
+    table.insert(buttons, {
         text = config.nextpagebtn.text,
         cb = function()
             print("KK-TEST> Button 'Next Page' is pressed.")
@@ -253,7 +253,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         control = config.nextpagebtn.control
     })
     
-    for i, v in ipairs(self.buttons) do
+    for i, v in ipairs(buttons) do
         if v.control ~= nil then
             self.edit_text:SetPassControlToScreen(v.control, true)
         end
@@ -263,16 +263,22 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     local menuoffset = config.menuoffset or Vector3(0, 0, 0)
     if TheInput:ControllerAttached() then
         local spacing = 150
-        self.menu = self.root:AddChild(Menu(self.buttons, spacing, true, "none"))
+        self.menu = self.root:AddChild(Menu(buttons, spacing, true, "none"))
         self.menu:SetTextSize(40)
         local w = self.menu:AutoSpaceByText(15)
         self.menu:SetPosition(menuoffset.x - .5 * w, menuoffset.y, menuoffset.z)
     else
         local spacing = 110
-        self.menu = self.root:AddChild(Menu(self.buttons, spacing, true, "small"))
+        self.menu = self.root:AddChild(Menu(buttons, spacing, true, "small"))
         self.menu:SetTextSize(35)
-        self.menu:SetPosition(menuoffset.x - .5 * spacing * (#self.buttons - 1), menuoffset.y, menuoffset.z)
+        self.menu:SetPosition(menuoffset.x - .5 * spacing * (#buttons - 1), menuoffset.y, menuoffset.z)
     end
+    
+    assert(#self.menu.items == #buttons, "KK-TEST> Fail to create enough buttons.")
+    for i, v in ipairs(self.menu.items) do
+        v:SetControl(buttons[i].control)
+    end
+    
     -------------------------------------------------------------------------------
     self.edit_text:OnControl(CONTROL_ACCEPT, false)
     self.edit_text.OnTextInputted = function()
@@ -288,15 +294,17 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     -- @see widgets/screen
     self.default_focus = self.edit_text
     
-    self.isopen = true
     self:Show()
-    
-    if self.bgimage then
-        if self.bgimage.texture then
-            self.bgimage:Show()
-        end
-    end
 end)
+
+function NotebookScreen:Show()
+    NotebookScreen._base.Show()
+    
+    self.isopen = true
+    if self.bgimage and self.bgimage.texture then
+        self.bgimage:Show()
+    end
+end
 
 function NotebookScreen:Close()
     print("KK-TEST> Function \"NotebookScreen:Close\" is invoked!")
@@ -410,27 +418,15 @@ function NotebookScreen:OnControl(control, down)
         GetControlName(control), tostring(down)
     ))
     if NotebookScreen._base.OnControl(self,control, down) then return true end
-
-    -- gjans: This makes it so that if the text box loses focus and you click
-    -- on the bg, it presses accept. Kind of weird behaviour. I'm guessing
-    -- something like it is needed for controllers, but it's not exaaaactly
-    -- this.
-    --if control == CONTROL_ACCEPT and not down then
-        --if #self.buttons >= 1 and self.buttons[#self.buttons] then
-            --self.buttons[#self.buttons].cb()
-            --return true
-        --end
-    --end
+    
     if down then
         return false
     elseif not self.edit_text.focus then
         return false
     end
-    for i, v in ipairs(self.buttons) do
-        if control == v.control and v.cb ~= nil then
-            v.cb()
-            return true
-        end
+    
+    for i, v in ipairs(self.menu.items) do
+        v:OnControl(control, down)
     end
     
     return false
