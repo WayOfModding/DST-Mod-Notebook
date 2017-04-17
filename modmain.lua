@@ -2,6 +2,9 @@ local require = GLOBAL.require
 local assert = GLOBAL.assert
 
 local DEBUG = false
+local TheInput = GLOBAL.TheInput
+local controller = TheInput:ControllerAttached() and TheInput:GetControllerID() or nil
+print("KK-TEST> Controller: ", controller)
 ------------------------------------------------------------------
 PrefabFiles =
 {
