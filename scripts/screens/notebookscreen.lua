@@ -75,7 +75,6 @@ local function LastPage(self)
     if newpage < oldpage then
         UpdatePage(self, newpage)
     end
-    self.edit_text:SetEditing(true)
 end
 local function NextPage(self)
     --print("KK-TEST> Function Screen:NextPage() is invoked.")
@@ -89,7 +88,6 @@ local function NextPage(self)
     if newpage > oldpage then
         UpdatePage(self, newpage)
     end
-    self.edit_text:SetEditing(true)
 end
 
 local function onaccept(widget)
@@ -285,14 +283,6 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         --print("KK-TEST> OnTextInputted: "..self:GetText())
         MarkCurrent(self)
     end
-    self.edit_text:SetOnGainFocus(function()
-        print("KK-TEST> Widget 'edit_text' gains focus!")
-        self.edit_text:SetEditing(true)
-    end)
-    self.edit_text:SetOnLoseFocus(function()
-        print("KK-TEST> Widget 'edit_text' loses focus!")
-        self.edit_text:SetEditing(false)
-    end)
     -- @invalid in DS
     self.edit_text:SetHelpTextApply("")
     -- @invalid in DS
