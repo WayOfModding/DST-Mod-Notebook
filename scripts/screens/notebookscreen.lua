@@ -99,9 +99,7 @@ local function onaccept(inst, doer, widget)
     end
     
     SetPages(inst, widget.pages, widget.marks)
-
-    widget.edit_text:SetEditing(false)
-    EndWriting(inst)
+    
     widget:Close()
 end
 
@@ -112,7 +110,6 @@ local function onmiddle(inst, doer, widget)
     end
     
     widget:OverrideText("")
-    widget.edit_text:SetEditing(true)
 end
 
 local function oncancel(inst, doer, widget)
@@ -121,8 +118,6 @@ local function oncancel(inst, doer, widget)
         return
     end
     
-    widget.edit_text:SetEditing(false)
-    EndWriting(inst)
     widget:Close()
 end
 
@@ -303,18 +298,12 @@ local WriteableWidget = Class(Screen, function(self, owner, writeable)
     self.edit_text:SetHelpTextCancel("")
     -- @invalid in DS
     self.edit_text:SetHelpTextEdit("")
-    -- WHAT?
+    -- @see widgets/screen
     self.default_focus = self.edit_text
-
-    --if config.buttoninfo ~= nil then
-        --if doer ~= nil and doer.components.playeractionpicker ~= nil then
-            --doer.components.playeractionpicker:RegisterContainer(container)
-        --end
-    --end
-
+    
     self.isopen = true
     self:Show()
-
+    
     if self.bgimage then
         if self.bgimage.texture then
             self.bgimage:Show()
@@ -333,8 +322,11 @@ end
 function WriteableWidget:Close()
     print("KK-TEST> Function \"WriteableWidget:Close\" is invoked!")
     if self.isopen then
+        widget.edit_text:SetEditing(false)
+        EndWriting(self.writeable)
+        
         self.writeable = nil
-
+        
         if self.bgimage then
             if self.bgimage.texture then
                 self.bgimage:Hide()
@@ -416,6 +408,18 @@ When a widget's OnControl is invoked,
     of another widget whose 'SetFocus' gets
     invoked just now;
 --]]
+--[[
+!!! BUGGY DUE TO KLEI !!!
+@see FrontEnd:OnControl
+[quote]
+    -- map CONTROL_PRIMARY to CONTROL_ACCEPT for buttons
+    -- while editing a text box and hovering over something else,
+    -- consume the accept button
+    -- (the raw key handlers will deal with it).
+[/quote]
+CONTROL_PRIMARY:    Mouse Left Button
+CONTROL_SECONDARY:  Mouse Right Button
+--]]
 function WriteableWidget:OnControl(control, down)
     print(string.format(
         "KK-TEST> Function \"WriteableWidget:OnControl('%s', '%s')\" is invoked!",
@@ -433,16 +437,9 @@ function WriteableWidget:OnControl(control, down)
             --return true
         --end
     --end
-    if control == CONTROL_OPEN_DEBUG_CONSOLE then
-        return true
-    end
-    if control == CONTROL_FORCE_INSPECT then
-        return false
-    end
     if down then
         return false
-    end
-    if self.buttons == nil then
+    elseif self.buttons == nil then
         return false
     end
     for i, v in ipairs(self.buttons) do
@@ -451,6 +448,8 @@ function WriteableWidget:OnControl(control, down)
             return true
         end
     end
+    
+    return false
 end
 
 --[[
