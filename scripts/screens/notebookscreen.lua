@@ -141,8 +141,6 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
 
     self.isopen = false
 
-    self._scrnw, self._scrnh = TheSim:GetScreenSize()
-
     self:SetScaleMode(SCALEMODE_PROPORTIONAL)
     self:SetMaxPropUpscale(MAX_HUD_SCALE)
     self:SetPosition(0, 0, 0)
@@ -251,6 +249,12 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
         control = config.nextpagebtn.control
     })
     
+    -- when you push a control with your mouse, the following seems
+    -- kidna useless, there can only be one possible control value
+    -- if there is a 'TextProcessorWidget'(@see FrontEnd:OnControl)
+    -- which is "CONTROL_ACCEPT"
+    -- unless you push such control through a keyboard or a controller
+    -- pressing ESC grants you CONTROL_CANCEL
     for i, v in ipairs(buttons) do
         if v.control ~= nil then
             self.edit_text:SetPassControlToScreen(v.control, true)
@@ -276,8 +280,6 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     for i, v in ipairs(self.menu.items) do
         -- weird game design
         v:SetControl(CONTROL_ACCEPT)
-        -- @see Widget:SetFocusFromChild
-        v.parent = self.menu
     end
     
     -------------------------------------------------------------------------------
@@ -290,6 +292,15 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     end
     self.edit_text.OnLoseFocus = function(self)
         print("KK-TEST> Widget 'edit_text' loses focus.")
+    end
+    --[[
+    # TextEdit:OnTextEntered(self:GetString())
+        # TextEdit:OnProcess()
+            # TextEdit:OnControl(control, down)
+            # TextEdit:OnRawKey(key, down)
+    --]]
+    self.edit_text.OnTextEntered = function(text)
+        --self:OnControl(CONTROL_ACCEPT, false)
     end
     -- @invalid in DS
     self.edit_text:SetHelpTextApply("")
@@ -370,23 +381,50 @@ function NotebookScreen:GetText()
     return self.edit_text and self.edit_text:GetString() or ""
 end
 
---[[
-# TextEdit:OnTextEntered(self:GetString())
-    # TextEdit:OnProcess()
-        # TextEdit:OnControl(control, down)
-        # TextEdit:OnRawKey(key, down)
---]]
---[[
-@see Widget:OnControl(control, down)
-When a widget's OnControl is invoked,
-    1) it returns false immediately,
-    if it is not focused;
-    2) it will pass control state to each
-    of its children that is focused;
-    3) it pass valid control state to its
-    parent_scroll_list
-    4) return false;
---]]
+local function PushScreen(screen)
+    if screen == nil then return end
+    TheFrontEnd:PushScreen(screen)
+end
+
+function NotebookScreen:PushScreen()
+    local screenstack = TheFrontEnd.screenstack
+    local stackdepth = #screenstack
+    for i = stackdepth, 1, -1 do
+        if screenstack[i] == self then
+            return false
+        end
+    end
+    PushScreen(self)
+    return true
+end
+
+local function PopScreen(screen)
+    if screen == nil then return end
+    local self = TheFrontEnd
+    self.focus_locked = false
+    self:SetForceProcessTextInput(false)
+    TheInputProxy:FlushInput()
+    screen:OnBecomeInactive()
+    table.remove(self.screenstack, #self.screenstack)
+    -- I don't want to destroy it yet
+    --screen:OnDestroy()
+    self.screenroot:RemoveChild(screen)
+    if #self.screenstack > 0 and screen ~= self.screenstack[#self.screenstack] then
+        self.screenstack[#self.screenstack]:SetFocus()
+        self.screenstack[#self.screenstack]:OnBecomeActive()
+        self:Update(0)
+    end
+end
+
+function NotebookScreen:PopScreen()
+    local screenstack = TheFrontEnd.screenstack
+    local stackdepth = #screenstack
+    if stackdepth > 0 and screenstack[stackdepth] == self then
+        PopScreen(self)
+        return true
+    end
+    return false
+end
 --[[
 @see Widget:SetFocus
 @see Widget:SetFocusFromChild
@@ -420,27 +458,42 @@ function NotebookScreen:OnControl(control, down)
         "KK-TEST> Function \"NotebookScreen:OnControl('%s', '%s')\" is invoked!",
         GetControlName(control), tostring(down)
     ))
+    if NotebookScreen._base.OnControl(self, control, down) then
+        --[[<Widget:OnControl(control, down)
+        -- Pass control to its parent if not focused
+        if not self.focus then return false end
+        -- Traverse its children
+        for k,v in pairs (self.children) do
+            if v.focus and v:OnControl(control, down) then return true end
+        end
+        -- Handle scroll list
+        if self.parent_scroll_list and (control == CONTROL_SCROLLBACK or control == CONTROL_SCROLLFWD) then
+            return self.parent_scroll_list:OnControl(control, down, true)
+        end
+        -- Pass control to its parent
+        return false
+        --]]
+        return true
+    end
+    
     if down then
         print("KK-TEST> Ignore KeyDown/ButtonDown event!")
         return false
         
-    elseif control == CONTROL_TOGGLE_DEBUGRENDER then
+    elseif control == CONTROL_TOGGLE_DEBUGRENDER
+        or control == CONTROL_INSPECT_SELF
+        -- push pause screen
+        or control == CONTROL_PAUSE
+        -- push new text input screen
+        or control == CONTROL_TOGGLE_SAY
+        or control == CONTROL_TOGGLE_WHISPER
+        or control == CONTROL_TOGGLE_SLASH_COMMAND
+    then
+        -- consumes some controls
         return false
+    -- this is removed because such condition is
+    -- already handled by 'NotebookScreen._base.OnControl'
     
-    elseif self.edit_text.focus and self.edit_text:OnControl(control, down) then
-        print("KK-TEST> Start editing...")
-        return true
-        
-    elseif self.menu.focus then
-        -- self.menu:ClearFocus()
-        for i, v in ipairs(self.menu.items) do
-            print("KK-TEST> Handling button [" .. tostring(i) .. "]", v)
-            if v:OnControl(control, down) then
-                print("KK-TEST> Handling button: Success!")
-                self.menu:ClearFocus()
-                return true
-            end
-        end
     end
     
     print("KK-TEST> No appropriate control is handled!")
@@ -458,7 +511,7 @@ Call stack
         * table.insert(self.screenstack, screen)
 --]]
 local function ShowWriteableWidget(player, playerhud, book)
-    local screen = NotebookScreen(playerhud.owner, book)
+    local screen = NotebookScreen(player, book)
     if screen == nil then
         return false, "Fail to make screen!"
     end
