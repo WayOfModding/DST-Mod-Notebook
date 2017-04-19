@@ -6,6 +6,12 @@ local function setpages(self, pages)
     for page, text in pairs(pages) do
         self.pages[page] = text
     end
+    -- do clean up after re-mapping page data
+    for page, text in pairs(pages) do
+        if text == "" then
+            table.remove(self.pages, page)
+        end
+    end
 end
 
 -- Notify client that a change is made to 'self.pages' in 'notebook' COMPONENT

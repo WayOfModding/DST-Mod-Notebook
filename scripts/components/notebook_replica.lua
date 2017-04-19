@@ -23,7 +23,6 @@ local function setpages(self, pages)
     --print("KK-TEST> Function 'setpages' is invoked.")
     -- Master Sim stores notebook data in 'notebook' COMPONENT instead REPLICA
     for page, text in pairs(pages) do
-        --print("KK-TEST> Update page <" .. type(page) .. ">" .. tostring(page) .. "<" .. type(text) .. ">\"" .. text .. "\"")
         page = tonumber(page)
         self.pages[page] = text
     end
