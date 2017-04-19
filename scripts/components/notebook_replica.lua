@@ -27,6 +27,13 @@ local function setpages(self, pages)
         page = tonumber(page)
         self.pages[page] = text
     end
+    -- do clean up after re-mapping page data
+    for page, text in pairs(pages) do
+        if text == "" then
+            page = tonumber(page)
+            table.remove(self.pages, page)
+        end
+    end
 end
 
 local Notebook = Class(function(self, inst)
