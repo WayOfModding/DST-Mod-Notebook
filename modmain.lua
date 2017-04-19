@@ -29,6 +29,12 @@ STRINGS.NOTEBOOK    =
     BUTTON_LASTPAGE = "Last Page",
     BUTTON_NEXTPAGE = "Next Page",
 }
+
+local TheNet        = Global.TheNet
+local LANG          = TheNet:GetLanguageCode()
+if LANG and not require("localisations/" .. LANG) then
+    print("KK-TEST> Unsupported localisation:", LANG)
+end
 ------------------------------------------------------------------
 local Ingredient    = GLOBAL.Ingredient
 local RECIPETABS    = GLOBAL.RECIPETABS
