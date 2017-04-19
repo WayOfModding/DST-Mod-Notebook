@@ -283,6 +283,12 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     end
     
     -------------------------------------------------------------------------------
+    local _OnTextInput = function(widget, text)
+        return TextEdit.OnTextInput(widget, text)
+            or self:NextPage()
+            and _OnTextInput(widget, text)
+    end
+    self.edit_text.OnTextInput = _OnTextInput
     self.edit_text.OnTextInputted = function()
         --print("KK-TEST> OnTextInputted: "..self:GetText())
         MarkCurrent(self)
@@ -313,7 +319,7 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     
     self:Show()
 end)
-
+-------------------------------------------------------------------------------
 function NotebookScreen:Show()
     NotebookScreen._base.Show(self)
     
@@ -352,6 +358,15 @@ function NotebookScreen:Close()
         self.inst:DoTaskInTime(.3, function() TheFrontEnd:PopScreen(self) end)
     end
 end
+-------------------------------------------------------------------------------
+function NotebookScreen:AllowNextPage()
+    return true
+end
+
+function NotebookScreen:NextPage()
+    if not self:AllowNextPage() then return false end
+    NextPage(self)
+end
 
 --[[
 Call stack 'NotebookScreen:OverrideText'
@@ -380,7 +395,7 @@ end
 function NotebookScreen:GetText()
     return self.edit_text and self.edit_text:GetString() or ""
 end
-
+-------------------------------------------------------------------------------
 local function PushScreen(screen)
     if screen == nil then return end
     TheFrontEnd:PushScreen(screen)
@@ -425,6 +440,7 @@ function NotebookScreen:PopScreen()
     end
     return false
 end
+-------------------------------------------------------------------------------
 --[[
 @see Widget:SetFocus
 @see Widget:SetFocusFromChild
@@ -499,7 +515,7 @@ function NotebookScreen:OnControl(control, down)
     print("KK-TEST> No appropriate control is handled!")
     return false
 end
-
+-------------------------------------------------------------------------------
 --[[
 @see screens/playerhud.lua
 --]]
