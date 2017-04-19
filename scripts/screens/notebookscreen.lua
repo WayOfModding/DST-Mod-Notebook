@@ -320,6 +320,12 @@ local NotebookScreen = Class(Screen, function(self, owner, writeable)
     self:Show()
 end)
 -------------------------------------------------------------------------------
+function NotebookScreen:OnBecomeActive()
+    self._base.OnBecomeActive(self)
+    self.edit_text:SetFocus()
+    self.edit_text:SetEditing(true)
+end
+
 function NotebookScreen:Show()
     NotebookScreen._base.Show(self)
     
