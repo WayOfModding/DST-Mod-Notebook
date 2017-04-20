@@ -31,10 +31,16 @@ STRINGS.NOTEBOOK    =
     BUTTON_NEXTPAGE = "Next Page",
 }
 
+_G.LOCALISATION     = "english"
+
 local TheNet        = _G.TheNet
 local LANG          = TheNet:GetLanguageCode()
-if LANG and not require("localisations/" .. LANG) then
-    print("KK-TEST> Unsupported localisation:", LANG)
+if LANG then
+    LANG = string.lower(LANG)
+    modimport("localisations/" .. LANG)
+    if _G.LOCALISATION ~= LANG then
+        print("KK-TEST> Unsupported localisation:", LANG)
+    end
 end
 ------------------------------------------------------------------
 local Ingredient    = _G.Ingredient

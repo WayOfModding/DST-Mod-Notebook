@@ -1,4 +1,5 @@
-local STRINGS       = GLOBAL.STRINGS
+local _G            = GLOBAL
+local STRINGS       = _G.STRINGS
 -- Strings
 STRINGS.NAMES.BOOK_NOTEBOOK = "笔记本"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "好记性不如烂笔头！"
@@ -13,3 +14,5 @@ STRINGS.NOTEBOOK    =
     BUTTON_LASTPAGE = "上一页",
     BUTTON_NEXTPAGE = "下一页",
 }
+
+_G.LOCALISATION     = "schinese"
