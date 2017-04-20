@@ -32,7 +32,7 @@ STRINGS.NOTEBOOK    =
 }
 
 _G.LOCALISATION     = "english"
-
+--[[
 local TheNet        = _G.TheNet
 local LANG          = TheNet:GetLanguageCode()
 if LANG then
@@ -42,6 +42,7 @@ if LANG then
         print("KK-TEST> Unsupported localisation:", LANG)
     end
 end
+--]]
 ------------------------------------------------------------------
 local Ingredient    = _G.Ingredient
 local RECIPETABS    = _G.RECIPETABS
