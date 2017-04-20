@@ -1,8 +1,9 @@
-local require = GLOBAL.require
-local assert = GLOBAL.assert
+local _G = GLOBAL
+local require = _G.require
+local assert = _G.assert
 
 local DEBUG = false
-local TheInput = GLOBAL.TheInput
+local TheInput = _G.TheInput
 local controller = TheInput:ControllerAttached() and TheInput:GetControllerID() or nil
 print("KK-TEST> Controller: ", controller)
 ------------------------------------------------------------------
@@ -14,7 +15,7 @@ Assets =
 {
 }
 ------------------------------------------------------------------
-local STRINGS       = GLOBAL.STRINGS
+local STRINGS       = _G.STRINGS
 -- Strings
 STRINGS.NAMES.BOOK_NOTEBOOK = "Notebook"
 STRINGS.RECIPE_DESC.BOOK_NOTEBOOK = "Better ink than memory!"
@@ -30,18 +31,18 @@ STRINGS.NOTEBOOK    =
     BUTTON_NEXTPAGE = "Next Page",
 }
 
-local TheNet        = Global.TheNet
+local TheNet        = _G.TheNet
 local LANG          = TheNet:GetLanguageCode()
 if LANG and not require("localisations/" .. LANG) then
     print("KK-TEST> Unsupported localisation:", LANG)
 end
 ------------------------------------------------------------------
-local Ingredient    = GLOBAL.Ingredient
-local RECIPETABS    = GLOBAL.RECIPETABS
-local TECH          = GLOBAL.TECH
+local Ingredient    = _G.Ingredient
+local RECIPETABS    = _G.RECIPETABS
+local TECH          = _G.TECH
 AddRecipe("book_notebook", { Ingredient("papyrus", 2) }, RECIPETABS.TOOLS, TECH.NONE, nil, nil, nil, nil, nil, "images/book_notebook.xml", nil, nil)
 ------------------------------------------------------------------
-local SpawnPrefab = GLOBAL.SpawnPrefab
+local SpawnPrefab = _G.SpawnPrefab
 AddPlayerPostInit(function(inst)
     -- Global variable 'TheWorld' is not yet initialized before getting into the game,
     -- caching it would cause a null pointer exception.
@@ -57,7 +58,7 @@ AddPlayerPostInit(function(inst)
     end
 end)
 ------------------------------------------------------------------
-local ACTIONS = GLOBAL.ACTIONS
+local ACTIONS = _G.ACTIONS
 local action_nbread = AddAction("NBREAD", "Read", function(act)
     print("KK-TEST> Action 'Read' is made.")
     local targ = act.target or act.invobject
@@ -94,12 +95,12 @@ end)
 -- This loads notebook_replica into book_notebook
 AddReplicableComponent("notebook")
 ------------------------------------------------------------------
-local State = GLOBAL.State
-local FRAMES = GLOBAL.FRAMES
-local TimeEvent = GLOBAL.TimeEvent
-local EventHandler = GLOBAL.EventHandler
-local ActionHandler = GLOBAL.ActionHandler
-local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
+local State = _G.State
+local FRAMES = _G.FRAMES
+local TimeEvent = _G.TimeEvent
+local EventHandler = _G.EventHandler
+local ActionHandler = _G.ActionHandler
+local EQUIPSLOTS = _G.EQUIPSLOTS
 local state_notebook = State{
     name = "notebook",
     tags = { "doing" },
@@ -168,8 +169,8 @@ AddStategraphState("wilson_client", state_notebook)
 AddStategraphActionHandler("wilson", ActionHandler(ACTIONS.NBREAD, "notebook"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTIONS.NBREAD, "notebook"))
 ------------------------------------------------------------------
-local checkentity = GLOBAL.checkentity
-local checkstring = GLOBAL.checkstring
+local checkentity = _G.checkentity
+local checkstring = _G.checkstring
 
 local function printinvalid(rpcname, player)
     print(string.format("Invalid %s RPC from (%s) %s", rpcname, player.userid or "", player.name or ""))
